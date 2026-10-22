@@ -1,0 +1,439 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Select } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Plus, Search, Edit, Trash2, Image, ChevronDown, Loader2, Eye, EyeOff, Package } from "lucide-react";
+import { useRestaurant } from "@/hooks/useRestaurant";
+import { formatCurrency } from "@/lib/format";
+import { toast } from "sonner";
+
+export default function MenuPage() {
+  const { 
+    currentRestaurant, 
+    isLoading: restaurantLoading,
+    fetchCategories,
+    createCategory,
+    fetchMenuItems,
+    createMenuItem,
+    error 
+  } = useRestaurant();
+
+  const [activeTab, setActiveTab] = useState<"categories" | "items">("categories");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [categories, setCategories] = useState<any[]>([]);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [itemsLoading, setItemsLoading] = useState(true);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [showItemDialog, setShowItemDialog] = useState(false);
+  const [editingItem, setEditingItem] = useState<any | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const [categoryForm, setCategoryForm] = useState({ name: "", is_active: true });
+  const [itemForm, setItemForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+    is_available: true,
+    is_vegetarian: false,
+    is_vegan: false,
+    is_gluten_free: false,
+  });
+
+  const loadCategories = async () => {
+    if (!currentRestaurant) return;
+    setCategoriesLoading(true);
+    try {
+      const data = await fetchCategories(currentRestaurant.slug);
+      setCategories(data);
+    } catch (err) {
+      toast.error("Failed to load categories");
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
+  const loadMenuItems = async () => {
+    if (!currentRestaurant) return;
+    setItemsLoading(true);
+    try {
+      const data = await fetchMenuItems({ category: selectedCategory ? parseInt(selectedCategory) : undefined, search: searchQuery });
+      setMenuItems(data);
+    } catch (err) {
+      toast.error("Failed to load menu items");
+    } finally {
+      setItemsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentRestaurant) {
+      loadCategories();
+    }
+  }, [currentRestaurant, fetchCategories]);
+
+  useEffect(() => {
+    if (currentRestaurant) {
+      loadMenuItems();
+    }
+  }, [currentRestaurant, selectedCategory, searchQuery, fetchMenuItems]);
+
+  const handleCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createCategory(currentRestaurant!.slug, { name: categoryForm.name, is_active: categoryForm.is_active });
+      toast.success("Category created!");
+      setShowCategoryDialog(false);
+      setCategoryForm({ name: "", is_active: true });
+      loadCategories();
+    } catch (err) {
+      toast.error("Failed to create category");
+    }
+  };
+
+  const handleItemSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData();
+    Object.entries(itemForm).forEach(([key, value]) => {
+      if (value !== undefined && value !== "") {
+        formData.append(key, value.toString());
+      }
+    });
+
+    try {
+      if (editingItem) {
+        toast.info("Edit functionality requires PATCH endpoint");
+      } else {
+        await createMenuItem(formData);
+        toast.success("Menu item created!");
+      }
+      setShowItemDialog(false);
+      setEditingItem(null);
+      setItemForm({ name: "", description: "", price: "", category: "", is_available: true, is_vegetarian: false, is_vegan: false, is_gluten_free: false });
+      setImagePreview(null);
+      loadMenuItems();
+    } catch (err) {
+      toast.error("Failed to save menu item");
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setImagePreview(url);
+    }
+  };
+
+  const handleEditItem = (item: any) => {
+    setEditingItem(item);
+    setItemForm({
+      name: item.name,
+      description: item.description || "",
+      price: item.price,
+      category: item.category.toString(),
+      is_available: item.is_available,
+      is_vegetarian: item.is_vegetarian || false,
+      is_vegan: item.is_vegan || false,
+      is_gluten_free: item.is_gluten_free || false,
+    });
+    if (item.image) setImagePreview(item.image);
+    setShowItemDialog(true);
+  };
+
+  const handleDeleteItem = async (id: number) => {
+    if (confirm("Are you sure you want to delete this item?")) {
+      toast.info("Delete functionality requires DELETE endpoint");
+    }
+  };
+
+  if (!currentRestaurant) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="page-title">Menu Management</h1>
+          <p className="page-subtitle">Manage categories and menu items</p>
+        </div>
+        <Card className="text-center py-12">
+          <CardContent>
+            <Package className="h-16 w-16 mx-auto text-ink-300 mb-4" />
+            <h3 className="text-lg font-semibold text-ink-900 mb-2">No Restaurant Selected</h3>
+            <p className="text-ink-500 mb-6 max-w-md mx-auto">
+              Create or select a restaurant to manage your menu.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const categoryOptions = categories.map(c => ({ value: c.id.toString(), label: c.name }));
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="page-title">Menu Management</h1>
+          <p className="page-subtitle">Manage categories and menu items</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setActiveTab("categories")} className={activeTab === "categories" ? "bg-crimson-600 text-white" : ""}>
+            Categories
+          </Button>
+          <Button variant="outline" onClick={() => setActiveTab("items")} className={activeTab === "items" ? "bg-crimson-600 text-white" : ""}>
+            Items
+          </Button>
+        </div>
+      </div>
+
+      {activeTab === "categories" && (
+        <div className="space-y-4">
+          <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Category
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create Category</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleCategorySubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name *</Label>
+                  <Input id="name" value={categoryForm.name} onChange={(e) => setCategoryForm(prev => ({ ...prev, name: e.target.value }))} placeholder="e.g., Appetizers" required />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={categoryForm.is_active} onChange={(e) => setCategoryForm(prev => ({ ...prev, is_active: e.target.checked }))} className="rounded border-ink-300 text-crimson-600 focus:ring-crimson-500" />
+                    Active
+                  </Label>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="secondary" onClick={() => { setShowCategoryDialog(false); setCategoryForm({ name: "", is_active: true }); }}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" loading={categoriesLoading}>
+                    Create
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          <Card>
+            <CardContent className="pt-0">
+              {categoriesLoading ? (
+                <div className="space-y-4 p-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-12 bg-ink-100 rounded animate-shimmer" />
+                  ))}
+                </div>
+              ) : categories.length === 0 ? (
+                <div className="text-center py-8 text-ink-500">
+                  <p>No categories yet. Create your first category to get started.</p>
+                </div>
+              ) : (
+                <ul className="divide-y divide-ink-100">
+                  {categories.map((cat) => (
+                    <li key={cat.id} className="flex items-center justify-between p-4 hover:bg-ink-50">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-crimson-100 flex items-center justify-center">
+                          <ChevronDown className="h-5 w-5 text-crimson-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-ink-900">{cat.name}</p>
+                          <p className="text-sm text-ink-500">{cat.menu_item?.length || 0} items</p>
+                        </div>
+                      </div>
+                      <span className={cat.is_active ? "badge-green" : "badge-gray"}>
+                        {cat.is_active ? "Active" : "Inactive"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {activeTab === "items" && (
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-start justify-between">
+            <Dialog open={showItemDialog} onOpenChange={setShowItemDialog}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Menu Item
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>{editingItem ? "Edit Menu Item" : "Add Menu Item"}</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleItemSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name *</Label>
+                    <Input id="name" value={itemForm.name} onChange={(e) => setItemForm(prev => ({ ...prev, name: e.target.value }))} placeholder="Margherita Pizza" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <textarea id="description" value={itemForm.description} onChange={(e) => setItemForm(prev => ({ ...prev, description: e.target.value }))} placeholder="Fresh tomatoes, mozzarella, basil..." className="flex h-20 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-crimson-500 focus:border-transparent" />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="price">Price *</Label>
+                      <Input id="price" type="number" step="0.01" value={itemForm.price} onChange={(e) => setItemForm(prev => ({ ...prev, price: e.target.value }))} placeholder="12.99" required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Category *</Label>
+                      <Select
+                        id="category"
+                        value={itemForm.category}
+                        onValueChange={(v) => setItemForm(prev => ({ ...prev, category: v }))}
+                        options={categoryOptions}
+                        placeholder="Select category"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Image</Label>
+                    <div className="flex items-center gap-4">
+                      <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-ink-200 bg-ink-50 overflow-hidden">
+                        {imagePreview ? (
+                          <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
+                        ) : (
+                          <Image className="h-8 w-8 mx-auto text-ink-400" />
+                        )}
+                        <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+                      </div>
+                      <Button type="button" variant="outline" className="w-fit">Upload Image</Button>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={itemForm.is_available} onChange={(e) => setItemForm(prev => ({ ...prev, is_available: e.target.checked }))} className="rounded border-ink-300 text-crimson-600 focus:ring-crimson-500" />
+                      Available
+                    </Label>
+                    <Label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={itemForm.is_vegetarian} onChange={(e) => setItemForm(prev => ({ ...prev, is_vegetarian: e.target.checked }))} className="rounded border-ink-300 text-crimson-600 focus:ring-crimson-500" />
+                      Vegetarian
+                    </Label>
+                    <Label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={itemForm.is_vegan} onChange={(e) => setItemForm(prev => ({ ...prev, is_vegan: e.target.checked }))} className="rounded border-ink-300 text-crimson-600 focus:ring-crimson-500" />
+                      Vegan
+                    </Label>
+                    <Label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={itemForm.is_gluten_free} onChange={(e) => setItemForm(prev => ({ ...prev, is_gluten_free: e.target.checked }))} className="rounded border-ink-300 text-crimson-600 focus:ring-crimson-500" />
+                      Gluten Free
+                    </Label>
+                  </div>
+                  <DialogFooter>
+                    <Button type="button" variant="secondary" onClick={() => { setEditingItem(null); setShowItemDialog(false); setItemForm({ name: "", description: "", price: "", category: "", is_available: true, is_vegetarian: false, is_vegan: false, is_gluten_free: false }); setImagePreview(null); }}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" loading={itemsLoading}>
+                      {editingItem ? "Update" : "Create"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <div className="flex gap-2">
+              <div className="relative flex-1 max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+                <Input placeholder="Search items..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
+              </div>
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+                options={[{ value: "", label: "All Categories" }, ...categoryOptions]}
+                placeholder="Filter by category"
+              />
+            </div>
+          </div>
+
+          <Card>
+            <CardContent className="pt-0">
+              {itemsLoading ? (
+                <div className="space-y-4 p-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-20 bg-ink-100 rounded animate-shimmer" />
+                  ))}
+                </div>
+              ) : menuItems.length === 0 ? (
+                <div className="text-center py-8 text-ink-500">
+                  <p>No menu items yet. Add your first item to get started.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-ink-200 text-left text-sm text-ink-500">
+                        <th className="pb-3 font-medium text-ink-900">Image</th>
+                        <th className="pb-3 font-medium text-ink-900">Name</th>
+                        <th className="pb-3 font-medium text-ink-900">Category</th>
+                        <th className="pb-3 font-medium text-ink-900">Price</th>
+                        <th className="pb-3 font-medium text-ink-900">Status</th>
+                        <th className="pb-3 font-medium text-ink-900">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-ink-100">
+                      {menuItems.map((item) => (
+                        <tr key={item.id} className="hover:bg-ink-50">
+                          <td className="py-4">
+                            <div className="h-12 w-12 rounded-lg bg-ink-100 flex items-center justify-center overflow-hidden">
+                              {item.image ? (
+                                <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                              ) : (
+                                <Image className="h-6 w-6 text-ink-400" />
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-4">
+                            <p className="font-medium text-ink-900">{item.name}</p>
+                            {item.description && <p className="text-sm text-ink-500 truncate max-w-xs">{item.description}</p>}
+                          </td>
+                          <td className="py-4">
+                            <span className="badge-crimson">{item.category_name || item.category}</span>
+                          </td>
+                          <td className="py-4 font-semibold text-ink-900">{formatCurrency(item.price)}</td>
+                          <td className="py-4">
+                            <span className={item.is_available ? "badge-green" : "badge-gray"}>
+                              {item.is_available ? "Available" : "Unavailable"}
+                            </span>
+                          </td>
+                          <td className="py-4">
+                            <div className="flex items-center gap-2">
+                              <Button variant="ghost" size="icon" onClick={() => handleEditItem(item)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item.id)}>
+                                <Trash2 className="h-4 w-4 text-crimson-600" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+}

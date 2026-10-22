@@ -1,26 +1,169 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --radius: 0.625rem;
+    --sidebar-width: 260px;
+    --topbar-height: 64px;
+  }
+
+  * {
+    @apply border-ink-200;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-surface-tertiary text-ink-900 font-body;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+
+  ::selection {
+    @apply bg-crimson-100 text-crimson-900;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-ink-300 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-400;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .page-header {
+    @apply mb-8;
+  }
+  .page-title {
+    @apply text-2xl font-display font-bold text-ink-900;
+  }
+  .page-subtitle {
+    @apply text-sm text-ink-500 mt-1;
+  }
+
+  /* Card */
+  .card {
+    @apply bg-white rounded-xl border border-ink-100 shadow-sm;
+  }
+  .card-hover {
+    @apply card transition-all duration-200 hover:shadow-md hover:border-ink-200 hover:-translate-y-0.5;
+  }
+
+  /* Stat card accent lines */
+  .stat-card-crimson {
+    @apply border-t-4 border-t-crimson-600;
+  }
+  .stat-card-blue {
+    @apply border-t-4 border-t-blue-500;
+  }
+  .stat-card-amber {
+    @apply border-t-4 border-t-amber-500;
+  }
+  .stat-card-green {
+    @apply border-t-4 border-t-green-500;
+  }
+
+  /* Skeleton shimmer */
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    @apply animate-shimmer rounded;
+  }
+
+  /* Sidebar nav item */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-600
+           transition-all duration-150 cursor-pointer select-none;
+  }
+  .nav-item:hover {
+    @apply bg-ink-50 text-ink-900;
+  }
+  .nav-item.active {
+    @apply bg-crimson-50 text-crimson-700;
+  }
+  .nav-item.active .nav-icon {
+    @apply text-crimson-600;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-crimson {
+    @apply badge bg-crimson-100 text-crimson-700;
+  }
+  .badge-green {
+    @apply badge bg-green-100 text-green-700;
+  }
+  .badge-amber {
+    @apply badge bg-amber-100 text-amber-700;
+  }
+  .badge-blue {
+    @apply badge bg-blue-100 text-blue-700;
+  }
+  .badge-gray {
+    @apply badge bg-ink-100 text-ink-600;
+  }
+
+  /* Status badges for orders */
+  .status-preparing {
+    @apply badge bg-status-preparing-bg text-status-preparing-text;
+  }
+  .status-pending {
+    @apply badge bg-status-pending-bg text-status-pending-text;
+  }
+  .status-delivered {
+    @apply badge bg-status-delivered-bg text-status-delivered-text;
+  }
+  .status-canceled {
+    @apply badge bg-status-canceled-bg text-status-canceled-text;
+  }
+
+  /* Amount display */
+  .amount-positive {
+    @apply font-mono font-semibold text-green-600;
+  }
+  .amount-negative {
+    @apply font-mono font-semibold text-crimson-600;
+  }
+  .amount-neutral {
+    @apply font-mono font-semibold text-ink-500;
+  }
+
+  /* Input focus */
+  .input-focus {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson-500 focus-visible:ring-offset-2;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
 }
