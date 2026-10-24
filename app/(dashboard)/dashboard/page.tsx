@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Users,
   Utensils,
   Package,
-  DollarSign,
+  Banknote,
   TrendingUp,
   Building2,
   Plus,
+  Info,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
@@ -17,12 +18,21 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useRestaurant } from "@/hooks/useRestaurant";
 
-const statusStyles = {
-  preparing: "status-preparing",
-  pending: "status-pending",
-  delivered: "status-delivered",
-  canceled: "status-canceled",
+const statusStyles: Record<string, string> = {
+  PENDING: "status-pending",
+  PREPARING: "status-preparing",
+  DELIVERED: "status-delivered",
+  CANCELLED: "status-canceled",
 };
+
+const formatStatus = (status: string) =>
+  status.charAt(0) + status.slice(1).toLowerCase();
+
+const getOrderTotal = (order: any) =>
+  (order.items_for_order || []).reduce(
+    (sum: number, item: any) => sum + parseFloat(item.subtotal || "0"),
+    0,
+  );
 
 export default function DashboardPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -30,8 +40,31 @@ export default function DashboardPage() {
     currentRestaurant,
     isLoading: restaurantLoading,
     fetchRestaurant,
+    fetchOrders,
     error: restaurantError,
   } = useRestaurant();
+
+  const [orders, setOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!currentRestaurant) return;
+    let active = true;
+
+    const loadOrders = async () => {
+      const data = await fetchOrders();
+      if (!active) return;
+      setOrders(
+        (Array.isArray(data) ? data : []).filter(
+          (order: any) => order.restaurant === currentRestaurant.slug,
+        ),
+      );
+    };
+
+    loadOrders();
+    return () => {
+      active = false;
+    };
+  }, [currentRestaurant?.slug, fetchOrders]);
 
   useEffect(() => {
     if (isAuthenticated && !authLoading && !currentRestaurant) {
@@ -44,7 +77,7 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-center h-64">
-          <div className="h-8 w-32 bg-ink-200 rounded animate-shimmer" />
+          <div className="h-8 w-32 bg-neutral-200 rounded animate-shimmer" />
         </div>
       </div>
     );
@@ -52,81 +85,40 @@ export default function DashboardPage() {
 
   const hasRestaurant = !!currentRestaurant;
 
-  const recentOrders = [
-    {
-      id: "ORD-001",
-      table: "Table 5",
-      items: 3,
-      total: 45.5,
-      status: "preparing",
-      time: "2 min ago",
-    },
-    {
-      id: "ORD-002",
-      table: "Table 12",
-      items: 2,
-      total: 28.0,
-      status: "pending",
-      time: "5 min ago",
-    },
-    {
-      id: "ORD-003",
-      table: "Table 3",
-      items: 4,
-      total: 67.25,
-      status: "delivered",
-      time: "12 min ago",
-    },
-    {
-      id: "ORD-004",
-      table: "Table 8",
-      items: 1,
-      total: 15.0,
-      status: "canceled",
-      time: "18 min ago",
-    },
-    {
-      id: "ORD-005",
-      table: "Table 1",
-      items: 5,
-      total: 89.75,
-      status: "preparing",
-      time: "22 min ago",
-    },
-  ];
+  const recentOrders = orders.slice(0, 5);
 
   const stats = [
     {
       name: "Total Revenue",
-      value: "$12,345",
+      value: formatCurrency(12345),
       change: "+12.5%",
-      icon: DollarSign,
-      color: "text-green-600",
-      bg: "bg-green-100",
+      icon: Banknote,
+      color: "text-success-600",
+      bg: "bg-success-100",
     },
     {
       name: "Orders Today",
-      value: "47",
+      value: orders.length,
       change: "+8.2%",
       icon: Utensils,
-      color: "text-crimson-600",
-      bg: "bg-crimson-100",
+      color: "text-primary-600",
+      bg: "bg-primary-100",
     },
     {
       name: "Active Tables",
       value: "12",
       change: "+3",
       icon: Users,
-      color: "text-blue-600",
-      bg: "bg-blue-100",
+      color: "text-info-600",
+      bg: "bg-info-100",
     },
     {
       name: "Menu Items",
       value: currentRestaurant?.menu_categories_count || 0,
       change: "+5",
       icon: Package,
-      color: "text-amber-600",
-      bg: "bg-amber-100",
+      color: "text-warning-600",
+      bg: "bg-warning-100",
     },
   ];
 
@@ -140,14 +132,14 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <Card className="border-2 border-crimson-200 bg-crimson-50">
+        <Card className="border-2 border-primary-200 bg-primary-50/60">
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <Building2 className="h-16 w-16 mx-auto text-crimson-500 mb-4" />
-              <h3 className="text-xl font-semibold text-ink-900 mb-2">
+              <Building2 className="h-16 w-16 mx-auto text-primary-500 mb-4" />
+              <h3 className="text-xl font-semibold text-neutral-900 mb-2">
                 No Restaurant Yet
               </h3>
-              <p className="text-ink-500 mb-6 max-w-md mx-auto">
+              <p className="text-neutral-500 mb-6 max-w-md mx-auto">
                 Create your first restaurant to start managing your menu,
                 inventory, staff, and orders.
               </p>
@@ -173,8 +165,8 @@ export default function DashboardPage() {
                   variant="outline"
                   className="h-24 flex flex-col items-center justify-center gap-2"
                 >
-                  <Plus className="h-6 w-6 text-crimson-600" />
-                  <span className="font-medium text-ink-900">
+                  <Plus className="h-6 w-6 text-primary-600" />
+                  <span className="font-medium text-neutral-900">
                     Create Restaurant
                   </span>
                 </Button>
@@ -225,18 +217,38 @@ export default function DashboardPage() {
       </div>
 
       {restaurantError && (
-        <div className="p-4 bg-crimson-50 border border-crimson-200 rounded-lg text-crimson-700">
+        <div className="p-4 bg-primary-50/60 border border-primary-200 rounded-lg text-primary-700">
           {restaurantError}
         </div>
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <Card key={stat.name} className="stat-card-crimson">
+          <Card key={stat.name} className="stat-card-primary relative">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div>
-                <p className="text-sm font-medium text-ink-500">{stat.name}</p>
-                <p className="text-2xl font-bold text-ink-900">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-medium text-neutral-500">
+                    {stat.name}
+                  </p>
+
+                  {stat.name === "Active Tables" && (
+                    <div className="group relative inline-flex text-danger-600">
+                      <Info
+                        size={14}
+                        className="cursor-help"
+                        aria-hidden="true"
+                      />
+                      <span
+                        role="tooltip"
+                        className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-40 -translate-x-1/2 rounded-lg border border-neutral-200 bg-white/95 px-3 py-2 text-center text-[11px] font-normal leading-snug text-neutral-700 shadow-lg backdrop-blur-md group-hover:block"
+                      >
+                        This feature is unavailable now
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-lg font-bold text-neutral-900">
                   {stat.name === "Menu Items" ? menuItemsCount : stat.value}
                 </p>
               </div>
@@ -248,7 +260,7 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-green-600 font-medium">
+              <p className="text-xs text-success-600 font-medium">
                 {stat.change} vs last week
               </p>
             </CardContent>
@@ -256,22 +268,22 @@ export default function DashboardPage() {
         ))}
 
         {/* Additional stats for inventory and staff */}
-        <Card className="stat-card-blue">
+        <Card className="stat-card-info">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div>
-              <p className="text-sm font-medium text-ink-500">
+              <p className="text-sm font-medium text-neutral-500">
                 Inventory Items
               </p>
-              <p className="text-2xl font-bold text-ink-900">
+              <p className="text-2xl font-bold text-neutral-900">
                 {inventoryCount}
               </p>
             </div>
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <Package className="text-blue-600 h-5 w-5" aria-hidden="true" />
+            <div className="bg-info-100 p-3 rounded-lg">
+              <Package className="text-info-600 h-5 w-5" aria-hidden="true" />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-blue-600 font-medium">
+            <p className="text-xs text-info-600 font-medium">
               {lowStockItems.length > 0
                 ? `${lowStockItems.length} low stock`
                 : "All stocked"}
@@ -279,20 +291,20 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="stat-card-amber">
+        <Card className="stat-card-warning">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div>
-              <p className="text-sm font-medium text-ink-500">Staff Members</p>
-              <p className="text-2xl font-bold text-ink-900">
+              <p className="text-sm font-medium text-neutral-500">Staff Members</p>
+              <p className="text-2xl font-bold text-neutral-900">
                 {restaurant.staff_count || 0}
               </p>
             </div>
-            <div className="bg-amber-100 p-3 rounded-lg">
-              <Users className="text-amber-600 h-5 w-5" aria-hidden="true" />
+            <div className="bg-warning-100 p-3 rounded-lg">
+              <Users className="text-warning-600 h-5 w-5" aria-hidden="true" />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-amber-600 font-medium">Active team</p>
+            <p className="text-xs text-warning-600 font-medium">Active team</p>
           </CardContent>
         </Card>
       </div>
@@ -307,39 +319,41 @@ export default function DashboardPage() {
               {recentOrders.map((order) => (
                 <div
                   key={order.id}
-                  className="flex items-center justify-between p-4 border border-ink-100 rounded-lg hover:bg-ink-50 transition-colors"
+                  className="flex items-center justify-between p-4 border border-neutral-100 rounded-lg hover:bg-neutral-50 transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-crimson-100 flex items-center justify-center">
-                      <Utensils className="h-5 w-5 text-crimson-600" />
+                    <div className="h-10 w-10 rounded-lg bg-primary-100 flex items-center justify-center">
+                      <Utensils className="h-5 w-5 text-primary-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-ink-900">{order.id}</p>
-                      <p className="text-sm text-ink-500">
-                        {order.table} • {order.items} items
+                      <p className="font-medium text-neutral-900">
+                        {order.order_reference}
+                      </p>
+                      <p className="text-sm text-neutral-500">
+                        {order.order_type} •{" "}
+                        {order.items_for_order?.length || 0} items
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-right">
                     <div>
-                      <p className="font-semibold text-ink-900">
-                        {formatCurrency(order.total)}
+                      <p className="font-semibold text-neutral-900">
+                        {formatCurrency(getOrderTotal(order))}
                       </p>
-                      <p className="text-xs text-ink-500">{order.time}</p>
                     </div>
                     <span
-                      className={
-                        statusStyles[
-                          order.status as keyof typeof statusStyles
-                        ] || "badge-gray"
-                      }
+                      className={statusStyles[order.status] || "badge-neutral"}
                     >
-                      {order.status.charAt(0).toUpperCase() +
-                        order.status.slice(1)}
+                      {formatStatus(order.status)}
                     </span>
                   </div>
                 </div>
               ))}
+              {recentOrders.length === 0 && (
+                <p className="text-sm text-neutral-500 text-center py-6">
+                  No orders yet. Create your first order from the Orders page.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -356,8 +370,8 @@ export default function DashboardPage() {
                 className="h-24 flex flex-col items-center justify-center gap-2"
               >
                 <Link href="/dashboard/menu">
-                  <Utensils className="h-6 w-6 text-crimson-600" />
-                  <span className="font-semibold text-ink-900">
+                  <Utensils className="h-6 w-6 text-primary-600" />
+                  <span className="font-semibold text-neutral-900">
                     Manage Menu
                   </span>
                 </Link>
@@ -368,8 +382,8 @@ export default function DashboardPage() {
                 className="h-24 flex flex-col items-center justify-center gap-2"
               >
                 <Link href="/dashboard/inventory">
-                  <Package className="h-6 w-6 text-blue-600" />
-                  <span className="font-semibold text-ink-900">
+                  <Package className="h-6 w-6 text-info-600" />
+                  <span className="font-semibold text-neutral-900">
                     Manage Inventory
                   </span>
                 </Link>
@@ -380,8 +394,8 @@ export default function DashboardPage() {
                 className="h-24 flex flex-col items-center justify-center gap-2"
               >
                 <Link href="/dashboard/staff">
-                  <Users className="h-6 w-6 text-green-600" />
-                  <span className="font-semibold text-ink-900">
+                  <Users className="h-6 w-6 text-success-600" />
+                  <span className="font-semibold text-neutral-900">
                     Manage Staff
                   </span>
                 </Link>
@@ -392,8 +406,8 @@ export default function DashboardPage() {
                 className="h-24 flex flex-col items-center justify-center gap-2"
               >
                 <Link href="/dashboard/settings">
-                  <TrendingUp className="h-6 w-6 text-amber-600" />
-                  <span className="font-semibold text-ink-900">Settings</span>
+                  <TrendingUp className="h-6 w-6 text-warning-600" />
+                  <span className="font-semibold text-neutral-900">Settings</span>
                 </Link>
               </Button>
             </div>
@@ -403,35 +417,35 @@ export default function DashboardPage() {
 
       {/* Low Stock Alert */}
       {lowStockItems.length > 0 && (
-        <Card className="border-crimson-200 bg-crimson-50">
+        <Card className="border-primary-200 bg-primary-50/60">
           <CardHeader className="flex items-center gap-2">
-            <Utensils className="h-5 w-5 text-crimson-600" />
-            <CardTitle className="text-crimson-700">Low Stock Alert</CardTitle>
+            <Utensils className="h-5 w-5 text-primary-600" />
+            <CardTitle className="text-primary-700">Low Stock Alert</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {lowStockItems.slice(0, 5).map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 bg-white border border-ink-100 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-white border border-neutral-100 rounded-lg"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center">
-                      <Package className="h-4 w-4 text-amber-600" />
+                    <div className="h-8 w-8 rounded-lg bg-warning-100 flex items-center justify-center">
+                      <Package className="h-4 w-4 text-warning-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-ink-900">{item.name}</p>
-                      <p className="text-sm text-ink-500">
+                      <p className="font-medium text-neutral-900">{item.name}</p>
+                      <p className="text-sm text-neutral-500">
                         {item.quantity} {item.unit_measurement} remaining
                         (threshold: {item.low_stock_threshold})
                       </p>
                     </div>
                   </div>
-                  <span className="badge-amber">Low Stock</span>
+                  <span className="badge-warning">Low Stock</span>
                 </div>
               ))}
               {lowStockItems.length > 5 && (
-                <p className="text-sm text-ink-500 text-center">
+                <p className="text-sm text-neutral-500 text-center">
                   ... and {lowStockItems.length - 5} more items
                 </p>
               )}

@@ -17,7 +17,7 @@ export function Topbar() {
   const { user, logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-sm border-b border-ink-200">
+    <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
       <div className="flex h-full items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-4 lg:hidden">
           <Button variant="ghost" size="icon" className="-ml-2" aria-label="Open menu">
@@ -27,7 +27,7 @@ export function Topbar() {
 
         <div className="flex-1 max-w-xl hidden md:block">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden="true" />
             <Input
               type="search"
               placeholder="Search menu items, categories..."
@@ -52,7 +52,7 @@ export function Topbar() {
 
           <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
             <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-crimson-600 text-white text-[10px] font-medium flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-600 text-white text-[10px] font-medium flex items-center justify-center">
               3
             </span>
           </Button>
@@ -68,8 +68,8 @@ export function Topbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <div className="px-2 py-1">
-                <p className="text-sm font-medium text-ink-900 truncate">{user?.name}</p>
-                <p className="text-xs text-ink-500 truncate">{user?.email}</p>
+                <p className="text-sm font-medium text-neutral-900 truncate">{user?.name}</p>
+                <p className="text-xs text-neutral-500 truncate">{user?.email}</p>
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>

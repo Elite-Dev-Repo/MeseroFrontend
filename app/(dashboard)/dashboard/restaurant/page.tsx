@@ -142,7 +142,7 @@ export default function RestaurantPage() {
                       id="description"
                       {...{ value: formData.description, onChange: (e) => setFormData(prev => ({ ...prev, description: e.target.value })) }}
                       placeholder="Tell customers about your restaurant..."
-                      className="flex h-24 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-crimson-500 focus:border-transparent"
+                      className="flex h-24 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       rows={4}
                     />
                   </div>
@@ -150,7 +150,7 @@ export default function RestaurantPage() {
                   <div className="space-y-2">
                     <Label htmlFor="address">Address</Label>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                       <Input id="address" {...{ value: formData.address, onChange: (e) => setFormData(prev => ({ ...prev, address: e.target.value })) }} placeholder="123 Main St" className="pl-10" />
                     </div>
                   </div>
@@ -158,7 +158,7 @@ export default function RestaurantPage() {
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone</Label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                       <Input id="phone" type="tel" {...{ value: formData.phone, onChange: (e) => setFormData(prev => ({ ...prev, phone: e.target.value })) }} placeholder="+1 234 567 890" className="pl-10" />
                     </div>
                   </div>
@@ -166,7 +166,7 @@ export default function RestaurantPage() {
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                       <Input id="email" type="email" {...{ value: formData.email, onChange: (e) => setFormData(prev => ({ ...prev, email: e.target.value })) }} placeholder="info@restaurant.com" className="pl-10" />
                     </div>
                   </div>
@@ -177,11 +177,11 @@ export default function RestaurantPage() {
                 <div className="space-y-2">
                   <Label>Logo</Label>
                   <div className="flex items-center gap-4">
-                    <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-ink-200 bg-ink-50 overflow-hidden">
+                    <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 overflow-hidden">
                       {logoPreview ? (
                         <img src={logoPreview} alt="Logo preview" className="h-full w-full object-cover" />
                       ) : (
-                        <Image className="h-8 w-8 mx-auto text-ink-400" />
+                        <Image className="h-8 w-8 mx-auto text-neutral-400" />
                       )}
                       <input
                         type="file"
@@ -193,7 +193,7 @@ export default function RestaurantPage() {
                     </div>
                     <div className="flex flex-col gap-2">
                       <Button type="button" variant="outline" className="w-fit">Upload Logo</Button>
-                      <p className="text-xs text-ink-500">Recommended: 200x200px, max 2MB</p>
+                      <p className="text-xs text-neutral-500">Recommended: 200x200px, max 2MB</p>
                     </div>
                   </div>
                 </div>
@@ -201,11 +201,11 @@ export default function RestaurantPage() {
                 <div className="space-y-2">
                   <Label>Cover Image</Label>
                   <div className="flex items-center gap-4">
-                    <div className="relative h-20 w-40 rounded-lg border-2 border-dashed border-ink-200 bg-ink-50 overflow-hidden">
+                    <div className="relative h-20 w-40 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 overflow-hidden">
                       {coverPreview ? (
                         <img src={coverPreview} alt="Cover preview" className="h-full w-full object-cover" />
                       ) : (
-                        <Building2 className="h-8 w-8 mx-auto text-ink-400" />
+                        <Building2 className="h-8 w-8 mx-auto text-neutral-400" />
                       )}
                       <input
                         type="file"
@@ -217,7 +217,7 @@ export default function RestaurantPage() {
                     </div>
                     <div className="flex flex-col gap-2">
                       <Button type="button" variant="outline" className="w-fit">Upload Cover</Button>
-                      <p className="text-xs text-ink-500">Recommended: 1200x400px, max 5MB</p>
+                      <p className="text-xs text-neutral-500">Recommended: 1200x400px, max 5MB</p>
                     </div>
                   </div>
                 </div>
@@ -237,9 +237,9 @@ export default function RestaurantPage() {
 
         <Card className="text-center py-12">
           <CardContent>
-            <Building2 className="h-16 w-16 mx-auto text-ink-300 mb-4" />
-            <h3 className="text-lg font-semibold text-ink-900 mb-2">No Restaurant Yet</h3>
-            <p className="text-ink-500 mb-6 max-w-md mx-auto">
+            <Building2 className="h-16 w-16 mx-auto text-neutral-300 mb-4" />
+            <h3 className="text-lg font-semibold text-neutral-900 mb-2">No Restaurant Yet</h3>
+            <p className="text-neutral-500 mb-6 max-w-md mx-auto">
               Create your first restaurant to start managing your menu, inventory, and staff.
             </p>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -266,7 +266,7 @@ export default function RestaurantPage() {
                         id="description"
                         {...{ value: formData.description, onChange: (e) => setFormData(prev => ({ ...prev, description: e.target.value })) }}
                         placeholder="Tell customers about your restaurant..."
-                        className="flex h-24 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-crimson-500 focus:border-transparent"
+                        className="flex h-24 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         rows={4}
                       />
                     </div>
@@ -274,7 +274,7 @@ export default function RestaurantPage() {
                     <div className="space-y-2">
                       <Label htmlFor="address">Address</Label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                         <Input id="address" {...{ value: formData.address, onChange: (e) => setFormData(prev => ({ ...prev, address: e.target.value })) }} placeholder="123 Main St" className="pl-10" />
                       </div>
                     </div>
@@ -282,7 +282,7 @@ export default function RestaurantPage() {
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone</Label>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                         <Input id="phone" type="tel" {...{ value: formData.phone, onChange: (e) => setFormData(prev => ({ ...prev, phone: e.target.value })) }} placeholder="+1 234 567 890" className="pl-10" />
                       </div>
                     </div>
@@ -290,7 +290,7 @@ export default function RestaurantPage() {
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                         <Input id="email" type="email" {...{ value: formData.email, onChange: (e) => setFormData(prev => ({ ...prev, email: e.target.value })) }} placeholder="info@restaurant.com" className="pl-10" />
                       </div>
                     </div>
@@ -301,11 +301,11 @@ export default function RestaurantPage() {
                   <div className="space-y-2">
                     <Label>Logo</Label>
                     <div className="flex items-center gap-4">
-                      <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-ink-200 bg-ink-50 overflow-hidden">
+                      <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 overflow-hidden">
                         {logoPreview ? (
                           <img src={logoPreview} alt="Logo preview" className="h-full w-full object-cover" />
                         ) : (
-                          <Image className="h-8 w-8 mx-auto text-ink-400" />
+                          <Image className="h-8 w-8 mx-auto text-neutral-400" />
                         )}
                         <input
                           type="file"
@@ -317,7 +317,7 @@ export default function RestaurantPage() {
                       </div>
                       <div className="flex flex-col gap-2">
                         <Button type="button" variant="outline" className="w-fit">Upload Logo</Button>
-                        <p className="text-xs text-ink-500">Recommended: 200x200px, max 2MB</p>
+                        <p className="text-xs text-neutral-500">Recommended: 200x200px, max 2MB</p>
                       </div>
                     </div>
                   </div>
@@ -325,11 +325,11 @@ export default function RestaurantPage() {
                   <div className="space-y-2">
                     <Label>Cover Image</Label>
                     <div className="flex items-center gap-4">
-                      <div className="relative h-20 w-40 rounded-lg border-2 border-dashed border-ink-200 bg-ink-50 overflow-hidden">
+                      <div className="relative h-20 w-40 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 overflow-hidden">
                         {coverPreview ? (
                           <img src={coverPreview} alt="Cover preview" className="h-full w-full object-cover" />
                         ) : (
-                          <Building2 className="h-8 w-8 mx-auto text-ink-400" />
+                          <Building2 className="h-8 w-8 mx-auto text-neutral-400" />
                         )}
                         <input
                           type="file"
@@ -341,7 +341,7 @@ export default function RestaurantPage() {
                       </div>
                       <div className="flex flex-col gap-2">
                         <Button type="button" variant="outline" className="w-fit">Upload Cover</Button>
-                        <p className="text-xs text-ink-500">Recommended: 1200x400px, max 5MB</p>
+                        <p className="text-xs text-neutral-500">Recommended: 1200x400px, max 5MB</p>
                       </div>
                     </div>
                   </div>
@@ -386,27 +386,27 @@ export default function RestaurantPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
                 <Label>Name</Label>
-                <p className="text-ink-900">{currentRestaurant.name}</p>
+                <p className="text-neutral-900">{currentRestaurant.name}</p>
               </div>
               <div className="space-y-1">
                 <Label>Slug</Label>
-                <p className="text-ink-900 font-mono">{currentRestaurant.slug}</p>
+                <p className="text-neutral-900 font-mono">{currentRestaurant.slug}</p>
               </div>
               <div className="space-y-1 sm:col-span-2">
                 <Label>Description</Label>
-                <p className="text-ink-900">{currentRestaurant.description || "No description"}</p>
+                <p className="text-neutral-900">{currentRestaurant.description || "No description"}</p>
               </div>
               <div className="space-y-1">
                 <Label>Address</Label>
-                <p className="text-ink-900">{currentRestaurant.address || "Not set"}</p>
+                <p className="text-neutral-900">{currentRestaurant.address || "Not set"}</p>
               </div>
               <div className="space-y-1">
                 <Label>Phone</Label>
-                <p className="text-ink-900">{currentRestaurant.phone || "Not set"}</p>
+                <p className="text-neutral-900">{currentRestaurant.phone || "Not set"}</p>
               </div>
               <div className="space-y-1">
                 <Label>Email</Label>
-                <p className="text-ink-900">{currentRestaurant.email || "Not set"}</p>
+                <p className="text-neutral-900">{currentRestaurant.email || "Not set"}</p>
               </div>
             </div>
           </CardContent>
@@ -419,27 +419,27 @@ export default function RestaurantPage() {
           <CardContent className="space-y-4">
             <div className="space-y-1">
               <Label>Staff Members</Label>
-              <p className="text-2xl font-bold text-ink-900">{currentRestaurant.staff_count || 0}</p>
+              <p className="text-2xl font-bold text-neutral-900">{currentRestaurant.staff_count || 0}</p>
             </div>
             <div className="space-y-1">
               <Label>Menu Categories</Label>
-              <p className="text-2xl font-bold text-ink-900">{currentRestaurant.menu_categories_count || 0}</p>
+              <p className="text-2xl font-bold text-neutral-900">{currentRestaurant.menu_categories_count || 0}</p>
             </div>
             <div className="space-y-1">
               <Label>Status</Label>
-              <span className={currentRestaurant.is_active ? "badge-green" : "badge-gray"}>
+              <span className={currentRestaurant.is_active ? "badge-success" : "badge-neutral"}>
                 {currentRestaurant.is_active ? "Active" : "Inactive"}
               </span>
             </div>
             <div className="space-y-1">
               <Label>Created</Label>
-              <p className="text-ink-900">
+              <p className="text-neutral-900">
                 {currentRestaurant.created_at
                   ? new Date(currentRestaurant.created_at).toLocaleDateString()
                   : "—"}
               </p>
             </div>
-            <div className="pt-4 border-t border-ink-200">
+            <div className="pt-4 border-t border-neutral-200">
               <Button variant="outline" className="w-full" onClick={() => { /* Edit modal */ }}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Details

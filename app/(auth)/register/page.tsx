@@ -82,13 +82,13 @@ export default function RegisterPage() {
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
         <Link href="/" className="flex items-center justify-center gap-2 mb-6">
-          <div className="h-12 w-12 rounded-xl bg-crimson-600 flex items-center justify-center">
+          <div className="h-12 w-12 rounded-xl bg-primary-600 flex items-center justify-center">
             <Utensils className="h-7 w-7 text-white" />
           </div>
-          <span className="font-display font-bold text-2xl text-ink-900">Mesero</span>
+          <span className="font-display font-bold text-2xl text-neutral-900">Mesero</span>
         </Link>
-        <h1 className="text-2xl font-display font-bold text-ink-900">Create your account</h1>
-        <p className="text-ink-500 mt-2">Start managing your restaurant today</p>
+        <h1 className="text-2xl font-display font-bold text-neutral-900">Create your account</h1>
+        <p className="text-neutral-500 mt-2">Start managing your restaurant today</p>
       </div>
 
       <Card>
@@ -142,7 +142,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -169,15 +169,15 @@ export default function RegisterPage() {
                 type="checkbox"
                 id="terms"
                 required
-                className="mt-1 h-4 w-4 rounded border-ink-300 text-crimson-600 focus:ring-crimson-500"
+                className="mt-1 h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
               />
-              <Label htmlFor="terms" className="text-sm text-ink-600">
+              <Label htmlFor="terms" className="text-sm text-neutral-600">
                 I agree to the{" "}
-                <Link href="/terms" className="text-crimson-600 hover:underline">
+                <Link href="/terms" className="text-primary-600 hover:underline">
                   Terms of Service
                 </Link>{" "}
                 and{" "}
-                <Link href="/privacy" className="text-crimson-600 hover:underline">
+                <Link href="/privacy" className="text-primary-600 hover:underline">
                   Privacy Policy
                 </Link>
               </Label>
@@ -189,9 +189,9 @@ export default function RegisterPage() {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <p className="text-center text-sm text-ink-600">
+          <p className="text-center text-sm text-neutral-600">
             Already have an account?{" "}
-            <Link href="/login" className="text-crimson-600 font-medium hover:underline">
+            <Link href="/login" className="text-primary-600 font-medium hover:underline">
               Sign in
             </Link>
           </p>

@@ -49,7 +49,7 @@ export default function RootLayout({
         geist.variable,
       )}
     >
-      <body className="min-h-full bg-surface-tertiary text-ink-900">
+      <body className="min-h-full bg-surface-tertiary text-neutral-900">
         <ThemeProviders>
           <Providers>{children}</Providers>
         </ThemeProviders>

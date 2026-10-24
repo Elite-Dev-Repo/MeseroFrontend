@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import * as restaurantApi from "@/lib/restaurantApi";
+import * as orderApi from "@/lib/orderApi";
 
 interface User {
   id: number;
@@ -90,13 +91,36 @@ interface Staff {
   joined_at?: string;
 }
 
+interface OrderItem {
+  id: number;
+  menu_item: number | null;
+  quantity: number;
+  subtotal: string;
+}
+
+interface Order {
+  id: number;
+  restaurant: string;
+  order_reference: string;
+  order_type: string;
+  status: string;
+  items_for_order: OrderItem[];
+}
+
+interface CreateOrderPayload {
+  restaurant: string;
+  order_type?: string;
+  items: { id: number; quantity: number }[];
+}
+
 type ApiError = {
-  response?: { data?: { detail?: string } };
+  response?: { data?: { detail?: string; error?: string } };
 };
 
 const getErrorMessage = (err: unknown, fallback: string): string => {
-  const detail = (err as ApiError)?.response?.data?.detail;
-  return typeof detail === "string" ? detail : fallback;
+  const data = (err as ApiError)?.response?.data;
+  const message = data?.detail || data?.error;
+  return typeof message === "string" ? message : fallback;
 };
 
 type RestaurantPayload = Partial<
@@ -130,6 +154,9 @@ interface RestaurantContextValue {
   createMenuItem: (formData: FormData) => Promise<MenuItem>;
   fetchInventory: (slug: string) => Promise<Inventory[]>;
   fetchStaff: (slug: string) => Promise<Staff[]>;
+  fetchOrders: () => Promise<Order[]>;
+  createOrder: (payload: CreateOrderPayload) => Promise<Order>;
+  updateOrderStatus: (orderId: number, status: string) => Promise<Order>;
   setCurrentRestaurant: (restaurant: Restaurant | null) => void;
   clearRestaurant: () => void;
 }
@@ -313,6 +340,51 @@ export const RestaurantProvider = ({
     }
   }, []);
 
+  const fetchOrders = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await orderApi.getOrders();
+      return data;
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to load orders"));
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const createOrder = useCallback(async (payload: CreateOrderPayload) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await orderApi.createOrder(payload);
+      return data;
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to create order"));
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const updateOrderStatus = useCallback(
+    async (orderId: number, status: string) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await orderApi.updateOrderStatus(orderId, status);
+        return data;
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to update order status"));
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
   const clearRestaurant = useCallback(() => {
     setCurrentRestaurant(null);
     localStorage.removeItem("restaurant_slug");
@@ -334,6 +406,9 @@ export const RestaurantProvider = ({
       createMenuItem,
       fetchInventory,
       fetchStaff,
+      fetchOrders,
+      createOrder,
+      updateOrderStatus,
       setCurrentRestaurant,
       clearRestaurant,
     }),
@@ -352,6 +427,9 @@ export const RestaurantProvider = ({
       createMenuItem,
       fetchInventory,
       fetchStaff,
+      fetchOrders,
+      createOrder,
+      updateOrderStatus,
       setCurrentRestaurant,
       clearRestaurant,
     ],

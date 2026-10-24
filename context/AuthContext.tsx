@@ -9,10 +9,19 @@ interface User {
   id: number;
   email: string;
   name: string;
+  first_name?: string;
+  last_name?: string;
+  gender?: string;
   avatar_url?: string;
   is_active: boolean;
   date_joined: string;
   restaurants?: any[];
+}
+
+interface ProfileUpdatePayload {
+  first_name?: string;
+  last_name?: string;
+  gender?: string;
 }
 
 interface AuthContextValue {
@@ -25,6 +34,7 @@ interface AuthContextValue {
   resendOtp: (email: string) => Promise<any>;
   logout: () => void;
   refreshProfile: () => Promise<void>;
+  updateProfile: (payload: ProfileUpdatePayload) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -67,6 +77,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("Failed to refresh profile:", err);
     }
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && !user) {
+      refreshProfile();
+    }
+  }, [isAuthenticated, user, refreshProfile]);
 
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
@@ -125,6 +141,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
   }, []);
 
+  const updateProfile = useCallback(async (payload: ProfileUpdatePayload) => {
+    const data = await authApi.updateProfile(payload);
+    setUser(data);
+    return data;
+  }, []);
+
   const value = useMemo(
     () => ({
       isAuthenticated,
@@ -136,8 +158,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       resendOtp,
       logout,
       refreshProfile,
+      updateProfile,
     }),
-    [isAuthenticated, isLoading, user, login, register, verifyEmail, resendOtp, refreshProfile],
+    [isAuthenticated, isLoading, user, login, register, verifyEmail, resendOtp, refreshProfile, updateProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

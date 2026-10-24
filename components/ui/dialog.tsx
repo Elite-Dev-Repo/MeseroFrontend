@@ -74,13 +74,13 @@ export function DialogContent({ className, children }: DialogContentProps) {
       />
       <div
         className={cn(
-          "relative z-50 w-full max-w-lg bg-white rounded-xl border border-ink-200 shadow-lg animate-in fade-in-0 zoom-in-95",
+          "relative z-50 w-full max-w-lg bg-white rounded-xl border border-neutral-200 shadow-lg animate-in fade-in-0 zoom-in-95",
           className
         )}
       >
         <button
           onClick={() => setIsOpen(false)}
-          className="absolute right-4 top-4 rounded-sm p-1 text-ink-400 hover:text-ink-600 hover:bg-ink-100 transition-colors focus:outline-none focus:ring-2 focus:ring-crimson-500"
+          className="absolute right-4 top-4 rounded-sm p-1 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
           aria-label="Close"
         >
           <X className="h-4 w-4" />
@@ -100,11 +100,11 @@ export function DialogFooter({ children, className }: { children: React.ReactNod
 }
 
 export function DialogTitle({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <h2 className={cn("text-lg font-display font-semibold leading-none tracking-tight text-ink-900", className)}>{children}</h2>
+  return <h2 className={cn("text-lg font-display font-semibold leading-none tracking-tight text-neutral-900", className)}>{children}</h2>
 }
 
 export function DialogDescription({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <p className={cn("text-sm text-ink-500", className)}>{children}</p>
+  return <p className={cn("text-sm text-neutral-500", className)}>{children}</p>
 }
 
 export function DialogClose({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {

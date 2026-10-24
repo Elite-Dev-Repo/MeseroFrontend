@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import {
   ArrowRight,
   BarChart3,
@@ -11,6 +12,7 @@ import {
   ChevronDown,
   ClipboardList,
   Clock,
+  FolderCog,
   LayoutDashboard,
   Menu,
   Package,
@@ -156,16 +158,17 @@ const chartDays = ["M", "T", "W", "T", "F", "S", "S"];
 
 export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-surface-tertiary">
-      <header className="sticky top-0 z-50 border-b border-ink-100/80 bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-50 border-b border-neutral-100/80  backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-crimson-600 shadow-sm shadow-crimson-200">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 shadow-sm shadow-primary-200">
               <Utensils className="h-5 w-5 text-white" />
             </div>
-            <span className="font-display text-xl font-bold tracking-tight text-ink-900">
+            <span className="font-display text-xl font-bold tracking-tight text-neutral-900">
               Mesero
             </span>
           </Link>
@@ -175,7 +178,7 @@ export default function HomePage() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-ink-600 transition-colors hover:text-ink-900"
+                className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
               >
                 {link.label}
               </a>
@@ -183,21 +186,32 @@ export default function HomePage() {
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/login">Sign in</Link>
-            </Button>
-            <Button asChild variant="primary" size="sm">
-              <Link href="/register">
-                Get started
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+            {isAuthenticated ? (
+              <Button asChild variant="primary" size="sm">
+                <Link href="/dashboard">
+                  Dashboard
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/login">Sign in</Link>
+                </Button>
+                <Button asChild variant="primary" size="sm">
+                  <Link href="/register">
+                    Get started
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
 
           <button
             type="button"
             onClick={() => setMobileOpen((open) => !open)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-ink-700 hover:bg-ink-100 md:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-neutral-700 hover:bg-neutral-100 md:hidden"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
           >
@@ -210,136 +224,105 @@ export default function HomePage() {
         </div>
 
         {mobileOpen && (
-          <div className="border-t border-ink-100 bg-white px-4 pb-6 pt-4 md:hidden">
+          <div className="border-t border-neutral-100 bg-white px-4 pb-6 pt-4 md:hidden">
             <nav className="flex flex-col gap-1" aria-label="Mobile">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink-700 hover:bg-ink-50"
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
                 >
                   {link.label}
                 </a>
               ))}
             </nav>
             <div className="mt-4 flex flex-col gap-2">
-              <Button asChild variant="secondary">
-                <Link href="/login" onClick={() => setMobileOpen(false)}>
-                  Sign in
-                </Link>
-              </Button>
-              <Button asChild variant="primary">
-                <Link href="/register" onClick={() => setMobileOpen(false)}>
-                  Get started
-                </Link>
-              </Button>
+              {isAuthenticated ? (
+                <Button asChild variant="primary">
+                  <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
+                    Dashboard
+                  </Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild variant="secondary">
+                    <Link href="/login" onClick={() => setMobileOpen(false)}>
+                      Sign in
+                    </Link>
+                  </Button>
+                  <Button asChild variant="primary">
+                    <Link href="/register" onClick={() => setMobileOpen(false)}>
+                      Get started
+                    </Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}
       </header>
 
-      <main>
-        <section className="relative overflow-hidden">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(28,28,28,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(28,28,28,0.04)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_72%)]"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-crimson-200/40 blur-3xl"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-52 -left-40 h-[30rem] w-[30rem] rounded-full bg-amber-100/60 blur-3xl"
-          />
-
-          <div className="relative mx-auto grid max-w-7xl gap-16 px-4 pb-20 pt-16 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-12 lg:px-8 lg:pb-28 lg:pt-24">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-crimson-200 bg-white/80 px-3.5 py-1.5 text-xs font-semibold text-crimson-700 shadow-sm">
-                <Sparkles className="h-3.5 w-3.5" />
-                Built for modern restaurants
+      <main className="px-5">
+        <section className="relative overflow-hidden bg-primary-600 rounded-xl">
+          <div className="relative mx-auto max-w-7xl flex flex-col gap-16 px-4 pb-20 pt-16 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-12 lg:px-8 lg:pb-28 lg:pt-24">
+            <div className="w-full flex flex-col items-center justify-center">
+              <div className="flex w-fit justify-center items-center gap-6 rounded-sm bg-white p-1 text-xs font-semibold text-primary-700 shadow-sm">
+                <div className="px-3 rounded-sm py-1.5 flex gap-2 items-center justify-center bg-primary text-white">
+                  <p>Elite</p>
+                  <FolderCog className="h-3.5 w-3.5" />
+                </div>{" "}
+                <p className="tracking-wide font-semibold text-sm px-3">
+                  Restaurant operations, simplified.
+                </p>
               </div>
 
-              <h1 className="mt-6 text-balance font-display text-4xl font-bold leading-[1.05] tracking-tight text-ink-900 sm:text-5xl lg:text-6xl">
+              <h1 className="mt-6 text-balance text-center font-display text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Run your restaurant,
-                <span className="block bg-gradient-to-r from-crimson-700 via-crimson-500 to-amber-500 bg-clip-text text-transparent">
-                  not your spreadsheets.
-                </span>
+                <span className=""> not your spreadsheets.</span>
               </h1>
 
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-500">
-                Mesero brings your menu, inventory, staff, and analytics
-                together in one calm dashboard, so you can spend less time
-                chasing numbers and more time on the floor.
+              <p className="mt-6 max-w-xl text-sm text-center leading-relaxed text-white/80">
+                Eliminate order bottlenecks and stockouts. Mesero connects every
+                part of your service into one lightning-fast dashboard.
               </p>
 
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button asChild variant="primary" size="lg">
+                <Button asChild variant="secondary" size="lg">
                   <Link href="/register">
                     Start free
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg">
+                <Button asChild variant="default" size="lg">
                   <a href="#how-it-works">See how it works</a>
                 </Button>
               </div>
 
-              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-500">
+              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/80">
                 <span className="inline-flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-green-600" />
+                  <Check className="h-4 w-4 text-success-600" />
                   No credit card required
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-green-600" />
+                  <Check className="h-4 w-4 text-success-600" />
                   Free plan forever
                 </span>
-              </div>
-
-              <div className="mt-10 flex items-center gap-4 border-t border-ink-200/70 pt-6">
-                <div className="flex -space-x-2">
-                  {["MC", "JR", "AA", "SK"].map((initials, index) => (
-                    <div
-                      key={initials}
-                      className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-ink-900 text-[10px] font-semibold text-white"
-                      style={{ opacity: 1 - index * 0.12 }}
-                    >
-                      {initials}
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <div className="flex items-center gap-1">
-                    {[0, 1, 2, 3, 4].map((star) => (
-                      <Star
-                        key={star}
-                        className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
-                      />
-                    ))}
-                    <span className="ml-1 text-sm font-semibold text-ink-900">
-                      4.9/5
-                    </span>
-                  </div>
-                  <p className="text-xs text-ink-500">
-                    Trusted by 2,000+ restaurant teams
-                  </p>
-                </div>
               </div>
             </div>
 
             <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
               <div
                 aria-hidden="true"
-                className="absolute -inset-5 rounded-[2rem] bg-gradient-to-tr from-crimson-200/70 via-white to-amber-100/70 blur-2xl"
+                className="absolute -inset-5 rounded-[2rem]   blur-2xl"
               />
 
-              <div className="relative animate-fade-up overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-[0_30px_80px_-24px_rgba(211,47,47,0.35)]">
-                <div className="flex items-center gap-1.5 border-b border-ink-100 bg-ink-50/70 px-4 py-3">
-                  <span className="h-2.5 w-2.5 rounded-full bg-crimson-400" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-                  <div className="ml-3 flex-1 rounded-md border border-ink-200 bg-white px-3 py-1 text-[11px] text-ink-400">
+              <div className="relative animate-fade-up overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+                <div className="flex items-center gap-1.5 border-b border-neutral-100 bg-neutral-50/70 px-4 py-3">
+                  <span className="h-2.5 w-2.5 rounded-full bg-primary-400" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-warning-400" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-success-400" />
+                  <div className="ml-3 flex-1 rounded-md border border-neutral-200 bg-white px-3 py-1 text-[11px] text-neutral-400">
                     app.mesero.io/dashboard
                   </div>
                 </div>
@@ -347,60 +330,60 @@ export default function HomePage() {
                 <div className="space-y-4 p-5">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-ink-500">The Copper Pot</p>
-                      <p className="font-display text-lg font-bold text-ink-900">
+                      <p className="text-xs text-neutral-500">The Copper Pot</p>
+                      <p className="font-display text-lg font-bold text-neutral-900">
                         Dashboard
                       </p>
                     </div>
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700">
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-success-50 px-2.5 py-1 text-[11px] font-semibold text-success-700">
+                      <span className="h-1.5 w-1.5 rounded-full bg-success-500" />
                       Live
                     </span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="rounded-xl border border-ink-100 bg-surface-secondary p-3">
-                      <p className="text-[10px] font-medium uppercase tracking-wide text-ink-500">
+                    <div className="rounded-xl border border-neutral-100 bg-surface-secondary p-3">
+                      <p className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">
                         Revenue
                       </p>
-                      <p className="mt-1 font-display text-lg font-bold text-ink-900">
+                      <p className="mt-1 font-display text-lg font-bold text-neutral-900">
                         $12.4k
                       </p>
-                      <p className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-semibold text-green-600">
+                      <p className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-semibold text-success-600">
                         <TrendingUp className="h-3 w-3" />
                         +18%
                       </p>
                     </div>
-                    <div className="rounded-xl border border-ink-100 bg-surface-secondary p-3">
-                      <p className="text-[10px] font-medium uppercase tracking-wide text-ink-500">
+                    <div className="rounded-xl border border-neutral-100 bg-surface-secondary p-3">
+                      <p className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">
                         Orders
                       </p>
-                      <p className="mt-1 font-display text-lg font-bold text-ink-900">
+                      <p className="mt-1 font-display text-lg font-bold text-neutral-900">
                         342
                       </p>
-                      <p className="mt-0.5 text-[10px] font-semibold text-green-600">
+                      <p className="mt-0.5 text-[10px] font-semibold text-success-600">
                         +9.2%
                       </p>
                     </div>
-                    <div className="rounded-xl border border-ink-100 bg-surface-secondary p-3">
-                      <p className="text-[10px] font-medium uppercase tracking-wide text-ink-500">
+                    <div className="rounded-xl border border-neutral-100 bg-surface-secondary p-3">
+                      <p className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">
                         Staff
                       </p>
-                      <p className="mt-1 font-display text-lg font-bold text-ink-900">
+                      <p className="mt-1 font-display text-lg font-bold text-neutral-900">
                         12
                       </p>
-                      <p className="mt-0.5 text-[10px] font-semibold text-ink-500">
+                      <p className="mt-0.5 text-[10px] font-semibold text-neutral-500">
                         Active now
                       </p>
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-ink-100 p-4">
+                  <div className="rounded-xl border border-neutral-100 p-4">
                     <div className="mb-3 flex items-center justify-between">
-                      <p className="text-xs font-semibold text-ink-900">
+                      <p className="text-xs font-semibold text-neutral-900">
                         Weekly revenue
                       </p>
-                      <span className="text-[10px] font-medium text-ink-400">
+                      <span className="text-[10px] font-medium text-neutral-400">
                         Last 7 days
                       </span>
                     </div>
@@ -414,13 +397,13 @@ export default function HomePage() {
                             <div
                               className={`w-full rounded-md ${
                                 index === chartBars.length - 1
-                                  ? "bg-crimson-600"
-                                  : "bg-crimson-200"
+                                  ? "bg-primary-600"
+                                  : "bg-primary-200"
                               }`}
                               style={{ height: `${height}%` }}
                             />
                           </div>
-                          <span className="text-[9px] font-medium text-ink-400">
+                          <span className="text-[9px] font-medium text-neutral-400">
                             {chartDays[index]}
                           </span>
                         </div>
@@ -428,12 +411,12 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-ink-100 p-4">
+                  <div className="rounded-xl border border-neutral-100 p-4">
                     <div className="mb-2 flex items-center justify-between">
-                      <p className="text-xs font-semibold text-ink-900">
+                      <p className="text-xs font-semibold text-neutral-900">
                         Top dishes
                       </p>
-                      <span className="text-[10px] font-medium text-crimson-600">
+                      <span className="text-[10px] font-medium text-primary-600">
                         View all
                       </span>
                     </div>
@@ -443,21 +426,21 @@ export default function HomePage() {
                     ].map((dish) => (
                       <div
                         key={dish.name}
-                        className="flex items-center justify-between border-t border-ink-100 py-2 first:border-t-0"
+                        className="flex items-center justify-between border-t border-neutral-100 py-2 first:border-t-0"
                       >
                         <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-crimson-50">
-                            <Utensils className="h-3.5 w-3.5 text-crimson-600" />
+                          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-50/60">
+                            <Utensils className="h-3.5 w-3.5 text-primary-600" />
                           </div>
-                          <span className="text-[11px] font-medium text-ink-800">
+                          <span className="text-[11px] font-medium text-neutral-800">
                             {dish.name}
                           </span>
                         </div>
                         <div className="text-right">
-                          <p className="text-[11px] font-semibold text-ink-900">
+                          <p className="text-[11px] font-semibold text-neutral-900">
                             {dish.price}
                           </p>
-                          <p className="text-[9px] text-ink-400">
+                          <p className="text-[9px] text-neutral-400">
                             {dish.sold} sold
                           </p>
                         </div>
@@ -467,32 +450,32 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="absolute -left-4 top-28 hidden animate-fade-up rounded-xl border border-ink-100 bg-white p-3 shadow-lg sm:block">
+              <div className="absolute -left-4 top-28 hidden animate-fade-up rounded-xl border border-neutral-100 bg-white p-3 shadow-lg sm:block">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
-                    <Check className="h-4 w-4 text-green-600" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-success-50">
+                    <Check className="h-4 w-4 text-success-600" />
                   </div>
                   <div>
-                    <p className="text-[11px] font-semibold text-ink-900">
+                    <p className="text-[11px] font-semibold text-neutral-900">
                       New order #1042
                     </p>
-                    <p className="text-[10px] text-ink-500">
+                    <p className="text-[10px] text-neutral-500">
                       2 items • just now
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="absolute -right-3 bottom-20 hidden animate-fade-up rounded-xl border border-ink-100 bg-white p-3 shadow-lg sm:block">
+              <div className="absolute -right-3 bottom-20 hidden animate-fade-up rounded-xl border border-neutral-100 bg-white p-3 shadow-lg sm:block">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50">
-                    <Package className="h-4 w-4 text-amber-600" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-warning-50">
+                    <Package className="h-4 w-4 text-warning-600" />
                   </div>
                   <div>
-                    <p className="text-[11px] font-semibold text-ink-900">
+                    <p className="text-[11px] font-semibold text-neutral-900">
                       Low stock alert
                     </p>
-                    <p className="text-[10px] text-ink-500">
+                    <p className="text-[10px] text-neutral-500">
                       Tomatoes • 4 left
                     </p>
                   </div>
@@ -500,36 +483,18 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-
-          <div className="relative border-y border-ink-100 bg-white/70">
-            <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-ink-100 px-4 sm:px-6 lg:grid-cols-4 lg:px-8">
-              {[
-                { value: "2,000+", label: "Restaurants" },
-                { value: "48k", label: "Orders managed monthly" },
-                { value: "99.9%", label: "Uptime" },
-                { value: "4.9/5", label: "Average rating" },
-              ].map((stat) => (
-                <div key={stat.label} className="px-4 py-6 text-center">
-                  <p className="font-display text-2xl font-bold text-ink-900">
-                    {stat.value}
-                  </p>
-                  <p className="mt-1 text-xs text-ink-500">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
         </section>
 
         <section id="features" className="scroll-mt-20 py-20 lg:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <p className="text-sm font-semibold uppercase tracking-widest text-crimson-600">
+              <p className="text-sm font-semibold uppercase tracking-widest text-primary-600">
                 Features
               </p>
-              <h2 className="mt-3 text-balance font-display text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">
+              <h2 className="mt-3 text-balance font-display text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
                 Everything your restaurant needs, nothing it doesn&apos;t
               </h2>
-              <p className="mt-4 text-ink-500">
+              <p className="mt-4 text-neutral-500">
                 Replace the tangle of spreadsheets, notebooks, and group chats
                 with one tool your whole team can actually use.
               </p>
@@ -539,15 +504,15 @@ export default function HomePage() {
               {features.map((feature) => (
                 <div
                   key={feature.title}
-                  className="group rounded-2xl border border-ink-100 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-crimson-200 hover:shadow-lg"
+                  className="group rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-primary-200 hover:shadow-lg"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-crimson-50 text-crimson-600 transition-colors group-hover:bg-crimson-600 group-hover:text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-50/60 text-primary-600 transition-colors group-hover:bg-primary-600 group-hover:text-white">
                     <feature.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="mt-5 font-display text-lg font-semibold text-ink-900">
+                  <h3 className="mt-5 font-display text-lg font-semibold text-neutral-900">
                     {feature.title}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-500">
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-500">
                     {feature.desc}
                   </p>
                 </div>
@@ -558,17 +523,17 @@ export default function HomePage() {
 
         <section
           id="how-it-works"
-          className="scroll-mt-20 border-y border-ink-100 bg-white py-20 lg:py-28"
+          className="scroll-mt-20 border-y border-neutral-100 bg-white py-20 lg:py-28"
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <p className="text-sm font-semibold uppercase tracking-widest text-crimson-600">
+              <p className="text-sm font-semibold uppercase tracking-widest text-primary-600">
                 How it works
               </p>
-              <h2 className="mt-3 text-balance font-display text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">
+              <h2 className="mt-3 text-balance font-display text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
                 Up and running before the lunch rush
               </h2>
-              <p className="mt-4 text-ink-500">
+              <p className="mt-4 text-neutral-500">
                 No consultants, no migrations, no six-week onboarding. Just
                 three steps and you are live.
               </p>
@@ -577,20 +542,20 @@ export default function HomePage() {
             <div className="relative mt-16 grid gap-8 lg:grid-cols-3">
               <div
                 aria-hidden="true"
-                className="absolute left-[16.66%] right-[16.66%] top-12 hidden border-t-2 border-dashed border-ink-200 lg:block"
+                className="absolute left-[16.66%] right-[16.66%] top-12 hidden border-t-2 border-dashed border-neutral-200 lg:block"
               />
               {steps.map((step) => (
                 <div key={step.number} className="relative text-center">
-                  <div className="relative z-10 mx-auto flex h-24 w-24 items-center justify-center rounded-2xl border border-ink-100 bg-white shadow-sm">
-                    <step.icon className="h-9 w-9 text-crimson-600" />
-                    <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-ink-900 text-[10px] font-bold text-white">
+                  <div className="relative z-10 mx-auto flex h-24 w-24 items-center justify-center rounded-2xl border border-neutral-100 bg-white shadow-sm">
+                    <step.icon className="h-9 w-9 text-primary-600" />
+                    <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-neutral-900 text-[10px] font-bold text-white">
                       {step.number}
                     </span>
                   </div>
-                  <h3 className="mt-6 font-display text-lg font-semibold text-ink-900">
+                  <h3 className="mt-6 font-display text-lg font-semibold text-neutral-900">
                     {step.title}
                   </h3>
-                  <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-ink-500">
+                  <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-neutral-500">
                     {step.desc}
                   </p>
                 </div>
@@ -601,15 +566,15 @@ export default function HomePage() {
 
         <section className="py-20 lg:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid items-center gap-12 rounded-3xl border border-ink-100 bg-white p-8 shadow-sm lg:grid-cols-2 lg:p-14">
+            <div className="grid items-center gap-12 rounded-3xl border border-neutral-100 bg-white p-8 shadow-sm lg:grid-cols-2 lg:p-14">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-widest text-crimson-600">
+                <p className="text-sm font-semibold uppercase tracking-widest text-primary-600">
                   For the whole team
                 </p>
-                <h2 className="mt-3 text-balance font-display text-3xl font-bold tracking-tight text-ink-900">
+                <h2 className="mt-3 text-balance font-display text-3xl font-bold tracking-tight text-neutral-900">
                   Everyone sees the same picture
                 </h2>
-                <p className="mt-4 text-ink-500">
+                <p className="mt-4 text-neutral-500">
                   Owners get the numbers. Managers get the stock. Chefs get the
                   menu. Waiters get what they need to serve. One source of
                   truth, with permissions that keep it simple.
@@ -623,10 +588,10 @@ export default function HomePage() {
                     "Clean reports you can read in under a minute",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-green-100">
-                        <Check className="h-3 w-3 text-green-700" />
+                      <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-success-100">
+                        <Check className="h-3 w-3 text-success-700" />
                       </span>
-                      <span className="text-sm text-ink-700">{item}</span>
+                      <span className="text-sm text-neutral-700">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -645,40 +610,42 @@ export default function HomePage() {
                     icon: Users,
                     title: "Owners",
                     value: "Full access",
-                    tone: "bg-crimson-50 text-crimson-600",
+                    tone: "bg-primary-50/60 text-primary-600",
                   },
                   {
                     icon: ClipboardList,
                     title: "Managers",
                     value: "Menu & stock",
-                    tone: "bg-blue-50 text-blue-600",
+                    tone: "bg-info-50 text-info-600",
                   },
                   {
                     icon: ChefHat,
                     title: "Kitchen",
                     value: "Menu updates",
-                    tone: "bg-amber-50 text-amber-600",
+                    tone: "bg-warning-50 text-warning-600",
                   },
                   {
                     icon: Clock,
                     title: "Service",
                     value: "Live availability",
-                    tone: "bg-green-50 text-green-600",
+                    tone: "bg-success-50 text-success-600",
                   },
                 ].map((role) => (
                   <div
                     key={role.title}
-                    className="rounded-2xl border border-ink-100 bg-surface-secondary p-5"
+                    className="rounded-2xl border border-neutral-100 bg-surface-secondary p-5"
                   >
                     <div
                       className={`flex h-10 w-10 items-center justify-center rounded-xl ${role.tone}`}
                     >
                       <role.icon className="h-5 w-5" />
                     </div>
-                    <p className="mt-4 font-display text-base font-semibold text-ink-900">
+                    <p className="mt-4 font-display text-base font-semibold text-neutral-900">
                       {role.title}
                     </p>
-                    <p className="mt-1 text-xs text-ink-500">{role.value}</p>
+                    <p className="mt-1 text-xs text-neutral-500">
+                      {role.value}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -688,17 +655,17 @@ export default function HomePage() {
 
         <section
           id="pricing"
-          className="scroll-mt-20 border-y border-ink-100 bg-white py-20 lg:py-28"
+          className="scroll-mt-20 border-y border-neutral-100 bg-white py-20 lg:py-28"
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <p className="text-sm font-semibold uppercase tracking-widest text-crimson-600">
+              <p className="text-sm font-semibold uppercase tracking-widest text-primary-600">
                 Pricing
               </p>
-              <h2 className="mt-3 text-balance font-display text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">
+              <h2 className="mt-3 text-balance font-display text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
                 Simple plans that grow with you
               </h2>
-              <p className="mt-4 text-ink-500">
+              <p className="mt-4 text-neutral-500">
                 Start free. Upgrade when your team or your locations need more.
                 Cancel any time.
               </p>
@@ -710,25 +677,25 @@ export default function HomePage() {
                   key={plan.name}
                   className={`relative flex flex-col rounded-2xl border p-7 ${
                     plan.highlighted
-                      ? "border-crimson-600 bg-ink-900 text-white shadow-xl shadow-crimson-200/40 lg:-mt-4 lg:mb-4"
-                      : "border-ink-100 bg-white shadow-sm"
+                      ? "border-primary-600 bg-neutral-900 text-white shadow-xl shadow-primary-200/40 lg:-mt-4 lg:mb-4"
+                      : "border-neutral-100 bg-white shadow-sm"
                   }`}
                 >
                   {plan.highlighted && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-crimson-600 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-600 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
                       Most popular
                     </span>
                   )}
                   <h3
                     className={`font-display text-xl font-semibold ${
-                      plan.highlighted ? "text-white" : "text-ink-900"
+                      plan.highlighted ? "text-white" : "text-neutral-900"
                     }`}
                   >
                     {plan.name}
                   </h3>
                   <p
                     className={`mt-1 text-sm ${
-                      plan.highlighted ? "text-ink-300" : "text-ink-500"
+                      plan.highlighted ? "text-neutral-300" : "text-neutral-500"
                     }`}
                   >
                     {plan.desc}
@@ -739,7 +706,9 @@ export default function HomePage() {
                     </span>
                     <span
                       className={`pb-1 text-sm ${
-                        plan.highlighted ? "text-ink-400" : "text-ink-500"
+                        plan.highlighted
+                          ? "text-neutral-400"
+                          : "text-neutral-500"
                       }`}
                     >
                       / {plan.period}
@@ -752,13 +721,15 @@ export default function HomePage() {
                         <Check
                           className={`mt-0.5 h-4 w-4 flex-none ${
                             plan.highlighted
-                              ? "text-crimson-400"
-                              : "text-green-600"
+                              ? "text-primary-400"
+                              : "text-success-600"
                           }`}
                         />
                         <span
                           className={`text-sm ${
-                            plan.highlighted ? "text-ink-200" : "text-ink-600"
+                            plan.highlighted
+                              ? "text-neutral-200"
+                              : "text-neutral-600"
                           }`}
                         >
                           {feature}
@@ -783,10 +754,10 @@ export default function HomePage() {
         <section id="faq" className="scroll-mt-20 py-20 lg:py-28">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <p className="text-sm font-semibold uppercase tracking-widest text-crimson-600">
+              <p className="text-sm font-semibold uppercase tracking-widest text-primary-600">
                 FAQ
               </p>
-              <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">
+              <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
                 Questions, answered
               </h2>
             </div>
@@ -795,13 +766,13 @@ export default function HomePage() {
               {faqs.map((faq) => (
                 <details
                   key={faq.q}
-                  className="group rounded-xl border border-ink-100 bg-white px-6 py-5 shadow-sm open:border-crimson-200"
+                  className="group rounded-xl border border-neutral-100 bg-white px-6 py-5 shadow-sm open:border-primary-200"
                 >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-base font-semibold text-ink-900 [&::-webkit-details-marker]:hidden">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-base font-semibold text-neutral-900 [&::-webkit-details-marker]:hidden">
                     {faq.q}
-                    <ChevronDown className="h-5 w-5 flex-none text-ink-400 transition-transform duration-200 group-open:rotate-180" />
+                    <ChevronDown className="h-5 w-5 flex-none text-neutral-400 transition-transform duration-200 group-open:rotate-180" />
                   </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-ink-500">
+                  <p className="mt-3 text-sm leading-relaxed text-neutral-500">
                     {faq.a}
                   </p>
                 </details>
@@ -812,20 +783,12 @@ export default function HomePage() {
 
         <section className="pb-20 lg:pb-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="relative overflow-hidden rounded-3xl bg-ink-900 px-6 py-16 text-center shadow-2xl sm:px-12 lg:py-20">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-crimson-600/30 blur-3xl"
-              />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-amber-500/20 blur-3xl"
-              />
+            <div className="relative overflow-hidden rounded-3xl bg-neutral-900 px-6 py-16 text-center shadow-2xl sm:px-12 lg:py-20">
               <div className="relative">
                 <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
                   Ready to run a calmer restaurant?
                 </h2>
-                <p className="mx-auto mt-4 max-w-xl text-ink-300">
+                <p className="mx-auto mt-4 max-w-xl text-neutral-300">
                   Join thousands of teams using Mesero to keep their menu,
                   stock, and staff in sync. Start free today.
                 </p>
@@ -833,7 +796,8 @@ export default function HomePage() {
                   <Button
                     asChild
                     size="lg"
-                    className="bg-white text-ink-900 hover:bg-ink-100"
+                    variant="secondary"
+                    // className="bg-white text-neutral-900 hover:bg-"
                   >
                     <Link href="/register">
                       Create free account
@@ -855,32 +819,32 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="border-t border-ink-200 bg-white py-14">
+      <footer className="border-t border-neutral-200 bg-white py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-10 md:grid-cols-4">
             <div className="md:col-span-2">
               <Link href="/" className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-crimson-600">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600">
                   <Utensils className="h-5 w-5 text-white" />
                 </div>
-                <span className="font-display text-lg font-bold text-ink-900">
+                <span className="font-display text-lg font-bold text-neutral-900">
                   Mesero
                 </span>
               </Link>
-              <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-500">
+              <p className="mt-4 max-w-sm text-sm leading-relaxed text-neutral-500">
                 Restaurant management made simple. Menu, inventory, staff, and
                 analytics in one place.
               </p>
             </div>
 
             <div>
-              <h3 className="font-display text-sm font-semibold text-ink-900">
+              <h3 className="font-display text-sm font-semibold text-neutral-900">
                 Product
               </h3>
-              <ul className="mt-4 space-y-2.5 text-sm text-ink-500">
+              <ul className="mt-4 space-y-2.5 text-sm text-neutral-500">
                 {navLinks.map((link) => (
                   <li key={link.href}>
-                    <a href={link.href} className="hover:text-crimson-600">
+                    <a href={link.href} className="hover:text-primary-600">
                       {link.label}
                     </a>
                   </li>
@@ -889,22 +853,22 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h3 className="font-display text-sm font-semibold text-ink-900">
+              <h3 className="font-display text-sm font-semibold text-neutral-900">
                 Account
               </h3>
-              <ul className="mt-4 space-y-2.5 text-sm text-ink-500">
+              <ul className="mt-4 space-y-2.5 text-sm text-neutral-500">
                 <li>
-                  <Link href="/login" className="hover:text-crimson-600">
+                  <Link href="/login" className="hover:text-primary-600">
                     Sign in
                   </Link>
                 </li>
                 <li>
-                  <Link href="/register" className="hover:text-crimson-600">
+                  <Link href="/register" className="hover:text-primary-600">
                     Create account
                   </Link>
                 </li>
                 <li>
-                  <Link href="/dashboard" className="hover:text-crimson-600">
+                  <Link href="/dashboard" className="hover:text-primary-600">
                     Dashboard
                   </Link>
                 </li>
@@ -912,11 +876,11 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-ink-100 pt-6 text-sm text-ink-500 sm:flex-row">
+          <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-neutral-100 pt-6 text-sm text-neutral-500 sm:flex-row">
             <p>© 2026 Mesero. All rights reserved.</p>
             <p className="inline-flex items-center gap-1.5">
               Made for restaurants
-              <Utensils className="h-3.5 w-3.5 text-crimson-600" />
+              <Utensils className="h-3.5 w-3.5 text-primary-600" />
             </p>
           </div>
         </div>

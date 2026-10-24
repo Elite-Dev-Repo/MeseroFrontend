@@ -50,7 +50,7 @@ function useTabs() {
 
 export function TabsList({ children, className }: TabsListProps) {
   return (
-    <div className={cn("inline-flex h-10 items-center justify-center rounded-lg bg-ink-100 p-1 text-ink-600", className)} role="tablist">
+    <div className={cn("inline-flex h-10 items-center justify-center rounded-lg bg-neutral-100 p-1 text-neutral-600", className)} role="tablist">
       {children}
     </div>
   )
@@ -69,8 +69,8 @@ export function TabsTrigger({ value, children, className, disabled }: TabsTrigge
       onClick={() => !disabled && setValue(value)}
       disabled={disabled}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-        isActive ? "bg-white text-crimson-700 shadow-sm" : "text-ink-600 hover:text-ink-900",
+        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        isActive ? "bg-white text-primary-700 shadow-sm" : "text-neutral-600 hover:text-neutral-900",
         className
       )}
     >
@@ -90,7 +90,7 @@ export function TabsContent({ value, children, className }: TabsContentProps) {
       role="tabpanel"
       id={`tabs-content-${value}`}
       aria-labelledby={`tabs-trigger-${value}`}
-      className={cn("mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson-500 focus-visible:ring-offset-2", className)}
+      className={cn("mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2", className)}
     >
       {children}
     </div>

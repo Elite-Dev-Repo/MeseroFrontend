@@ -80,9 +80,9 @@ export default function StaffPage() {
         </div>
         <Card className="text-center py-12">
           <CardContent>
-            <Users className="h-16 w-16 mx-auto text-ink-300 mb-4" />
-            <h3 className="text-lg font-semibold text-ink-900 mb-2">No Restaurant Selected</h3>
-            <p className="text-ink-500 mb-6 max-w-md mx-auto">
+            <Users className="h-16 w-16 mx-auto text-neutral-300 mb-4" />
+            <h3 className="text-lg font-semibold text-neutral-900 mb-2">No Restaurant Selected</h3>
+            <p className="text-neutral-500 mb-6 max-w-md mx-auto">
               Create or select a restaurant to manage staff.
             </p>
           </CardContent>
@@ -152,7 +152,7 @@ export default function StaffPage() {
 
       <div className="flex flex-col sm:flex-row gap-4 items-start justify-between">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
           <Input
             placeholder="Search staff..."
             value={searchQuery}
@@ -167,58 +167,58 @@ export default function StaffPage() {
           {staffLoading ? (
             <div className="space-y-4 p-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-16 bg-ink-100 rounded animate-shimmer" />
+                <div key={i} className="h-16 bg-neutral-100 rounded animate-shimmer" />
               ))}
             </div>
           ) : filteredStaff.length === 0 ? (
-            <div className="text-center py-8 text-ink-500">
-              <Users className="h-12 w-12 mx-auto text-ink-300 mb-4" />
+            <div className="text-center py-8 text-neutral-500">
+              <Users className="h-12 w-12 mx-auto text-neutral-300 mb-4" />
               <p>No staff members yet. Invite your first team member.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-ink-200 text-left text-sm text-ink-500">
-                    <th className="pb-3 font-medium text-ink-900">Member</th>
-                    <th className="pb-3 font-medium text-ink-900">Email</th>
-                    <th className="pb-3 font-medium text-ink-900">Role</th>
-                    <th className="pb-3 font-medium text-ink-900">Status</th>
-                    <th className="pb-3 font-medium text-ink-900">Joined</th>
-                    <th className="pb-3 font-medium text-ink-900">Actions</th>
+                  <tr className="border-b border-neutral-200 text-left text-sm text-neutral-500">
+                    <th className="pb-3 font-medium text-neutral-900">Member</th>
+                    <th className="pb-3 font-medium text-neutral-900">Email</th>
+                    <th className="pb-3 font-medium text-neutral-900">Role</th>
+                    <th className="pb-3 font-medium text-neutral-900">Status</th>
+                    <th className="pb-3 font-medium text-neutral-900">Joined</th>
+                    <th className="pb-3 font-medium text-neutral-900">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-ink-100">
+                <tbody className="divide-y divide-neutral-100">
                   {filteredStaff.map((member) => (
-                    <tr key={member.id} className="hover:bg-ink-50">
+                    <tr key={member.id} className="hover:bg-neutral-50">
                       <td className="py-4">
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10">
                             <AvatarImage src={member.user?.avatar_url || undefined} alt={member.user?.name} />
                             <AvatarFallback>{member.user?.name?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
                           </Avatar>
-                          <p className="font-medium text-ink-900">{member.user?.name}</p>
+                          <p className="font-medium text-neutral-900">{member.user?.name}</p>
                         </div>
                       </td>
-                      <td className="py-4 text-ink-900">{member.user?.email}</td>
+                      <td className="py-4 text-neutral-900">{member.user?.email}</td>
                       <td className="py-4">
-                        <span className={member.role === "manager" ? "badge-crimson" : "badge-blue"}>
+                        <span className={member.role === "manager" ? "badge-primary" : "badge-info"}>
                           {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                         </span>
                       </td>
                       <td className="py-4">
-                        <span className={member.is_active ? "badge-green" : "badge-gray"}>
+                        <span className={member.is_active ? "badge-success" : "badge-neutral"}>
                           {member.is_active ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      <td className="py-4 text-ink-500">{new Date(member.joined_at).toLocaleDateString()}</td>
+                      <td className="py-4 text-neutral-500">{new Date(member.joined_at).toLocaleDateString()}</td>
                       <td className="py-4">
                         <div className="flex items-center gap-2">
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(member)}>
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => handleRemove(member)}>
-                            <Trash2 className="h-4 w-4 text-crimson-600" />
+                            <Trash2 className="h-4 w-4 text-primary-600" />
                           </Button>
                         </div>
                       </td>

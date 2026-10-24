@@ -80,11 +80,11 @@ export default function VerifyEmailPage() {
   if (showSuccess) {
     return (
       <div className="w-full max-w-md text-center">
-        <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
-          <CheckCircle2 className="h-10 w-10 text-green-600" />
+        <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-success-100 flex items-center justify-center">
+          <CheckCircle2 className="h-10 w-10 text-success-600" />
         </div>
-        <h1 className="text-2xl font-display font-bold text-ink-900 mb-2">Email Verified!</h1>
-        <p className="text-ink-500 mb-8">Your account has been successfully verified. You can now sign in.</p>
+        <h1 className="text-2xl font-display font-bold text-neutral-900 mb-2">Email Verified!</h1>
+        <p className="text-neutral-500 mb-8">Your account has been successfully verified. You can now sign in.</p>
         <Button asChild className="w-full">
           <Link href="/login">Sign In</Link>
         </Button>
@@ -96,13 +96,13 @@ export default function VerifyEmailPage() {
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
         <Link href="/" className="flex items-center justify-center gap-2 mb-6">
-          <div className="h-12 w-12 rounded-xl bg-crimson-600 flex items-center justify-center">
+          <div className="h-12 w-12 rounded-xl bg-primary-600 flex items-center justify-center">
             <Utensils className="h-7 w-7 text-white" />
           </div>
-          <span className="font-display font-bold text-2xl text-ink-900">Mesero</span>
+          <span className="font-display font-bold text-2xl text-neutral-900">Mesero</span>
         </Link>
-        <h1 className="text-2xl font-display font-bold text-ink-900">Verify your email</h1>
-        <p className="text-ink-500 mt-2">We sent a 6-digit code to your email</p>
+        <h1 className="text-2xl font-display font-bold text-neutral-900">Verify your email</h1>
+        <p className="text-neutral-500 mt-2">We sent a 6-digit code to your email</p>
       </div>
 
       <Card>
@@ -115,7 +115,7 @@ export default function VerifyEmailPage() {
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input
                   id="email"
                   type="email"
@@ -152,7 +152,7 @@ export default function VerifyEmailPage() {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <p className="text-center text-sm text-ink-500">
+          <p className="text-center text-sm text-neutral-500">
             Didn't receive the code?{" "}
             <Button
               variant="link"
@@ -163,9 +163,9 @@ export default function VerifyEmailPage() {
               Resend code
             </Button>
           </p>
-          <p className="text-center text-sm text-ink-500">
+          <p className="text-center text-sm text-neutral-500">
             Wrong email?{" "}
-            <Link href="/register" className="text-crimson-600 font-medium hover:underline">
+            <Link href="/register" className="text-primary-600 font-medium hover:underline">
               Sign up again
             </Link>
           </p>

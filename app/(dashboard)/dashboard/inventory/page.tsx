@@ -110,9 +110,9 @@ export default function InventoryPage() {
         </div>
         <Card className="text-center py-12">
           <CardContent>
-            <Package className="h-16 w-16 mx-auto text-ink-300 mb-4" />
-            <h3 className="text-lg font-semibold text-ink-900 mb-2">No Restaurant Selected</h3>
-            <p className="text-ink-500 mb-6 max-w-md mx-auto">
+            <Package className="h-16 w-16 mx-auto text-neutral-300 mb-4" />
+            <h3 className="text-lg font-semibold text-neutral-900 mb-2">No Restaurant Selected</h3>
+            <p className="text-neutral-500 mb-6 max-w-md mx-auto">
               Create or select a restaurant to manage inventory.
             </p>
           </CardContent>
@@ -169,7 +169,7 @@ export default function InventoryPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={formData.is_available} onChange={(e) => setFormData(prev => ({ ...prev, is_available: e.target.checked }))} className="rounded border-ink-300 text-crimson-600 focus:ring-crimson-500" />
+                  <input type="checkbox" checked={formData.is_available} onChange={(e) => setFormData(prev => ({ ...prev, is_available: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
                   Available
                 </Label>
               </div>
@@ -188,7 +188,7 @@ export default function InventoryPage() {
 
       <div className="flex flex-col sm:flex-row gap-4 items-start justify-between">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
           <Input
             placeholder="Search inventory..."
             value={searchQuery}
@@ -209,51 +209,51 @@ export default function InventoryPage() {
           {inventoryLoading ? (
             <div className="space-y-4 p-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-16 bg-ink-100 rounded animate-shimmer" />
+                <div key={i} className="h-16 bg-neutral-100 rounded animate-shimmer" />
               ))}
             </div>
           ) : filteredItems.length === 0 ? (
             <div className="text-center py-12">
-              <Package className="h-16 w-16 mx-auto text-ink-300 mb-4" />
-              <p className="text-ink-500">No inventory items found</p>
-              <p className="text-sm text-ink-400 mt-1">Add your first inventory item to get started</p>
+              <Package className="h-16 w-16 mx-auto text-neutral-300 mb-4" />
+              <p className="text-neutral-500">No inventory items found</p>
+              <p className="text-sm text-neutral-400 mt-1">Add your first inventory item to get started</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-ink-200 text-left text-sm text-ink-500">
-                    <th className="pb-3 font-medium text-ink-900">Item</th>
-                    <th className="pb-3 font-medium text-ink-900">Unit</th>
-                    <th className="pb-3 font-medium text-ink-900">Quantity</th>
-                    <th className="pb-3 font-medium text-ink-900">Threshold</th>
-                    <th className="pb-3 font-medium text-ink-900">Status</th>
+                  <tr className="border-b border-neutral-200 text-left text-sm text-neutral-500">
+                    <th className="pb-3 font-medium text-neutral-900">Item</th>
+                    <th className="pb-3 font-medium text-neutral-900">Unit</th>
+                    <th className="pb-3 font-medium text-neutral-900">Quantity</th>
+                    <th className="pb-3 font-medium text-neutral-900">Threshold</th>
+                    <th className="pb-3 font-medium text-neutral-900">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-ink-100">
+                <tbody className="divide-y divide-neutral-100">
                   {filteredItems.map((item) => {
                     const status = getStockStatus(item);
                     return (
-                      <tr key={item.id} className="hover:bg-ink-50">
+                      <tr key={item.id} className="hover:bg-neutral-50">
                         <td className="py-4">
                           <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-lg bg-ink-100 flex items-center justify-center">
-                              <Package className="h-5 w-5 text-ink-500" />
+                            <div className="h-10 w-10 rounded-lg bg-neutral-100 flex items-center justify-center">
+                              <Package className="h-5 w-5 text-neutral-500" />
                             </div>
                             <div>
-                              <p className="font-medium text-ink-900">{item.name}</p>
-                              <p className="text-sm text-ink-500">{item.unit_measurement}</p>
+                              <p className="font-medium text-neutral-900">{item.name}</p>
+                              <p className="text-sm text-neutral-500">{item.unit_measurement}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="py-4 text-ink-900">{item.unit_measurement}</td>
-                        <td className="py-4 font-mono text-ink-900">{Number(item.quantity).toLocaleString()}</td>
-                        <td className="py-4 text-ink-500">{Number(item.low_stock_threshold).toLocaleString()}</td>
+                        <td className="py-4 text-neutral-900">{item.unit_measurement}</td>
+                        <td className="py-4 font-mono text-neutral-900">{Number(item.quantity).toLocaleString()}</td>
+                        <td className="py-4 text-neutral-500">{Number(item.low_stock_threshold).toLocaleString()}</td>
                         <td className="py-4">
                           {status === "out" && <span className="badge-red flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Out of Stock</span>}
-                          {status === "low" && <span className="badge-amber flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Low Stock</span>}
-                          {status === "ok" && <span className="badge-green">In Stock</span>}
-                          {status === "inactive" && <span className="badge-gray">Inactive</span>}
+                          {status === "low" && <span className="badge-warning flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Low Stock</span>}
+                          {status === "ok" && <span className="badge-success">In Stock</span>}
+                          {status === "inactive" && <span className="badge-neutral">Inactive</span>}
                         </td>
                       </tr>
                     )

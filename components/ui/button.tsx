@@ -11,16 +11,16 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean
 }
 
-const baseStyles = "inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none"
+const baseStyles = "inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none"
 
 const variantStyles = {
-  default: "bg-ink-900 text-white hover:bg-ink-800 active:scale-[0.98] shadow-sm",
-  primary: "bg-crimson-600 text-white hover:bg-crimson-700 active:scale-[0.98] shadow-sm shadow-crimson-200",
-  secondary: "bg-surface text-ink-800 border border-ink-200 hover:bg-ink-50 active:scale-[0.98]",
-  ghost: "text-ink-700 hover:bg-ink-100 hover:text-ink-900",
-  destructive: "bg-crimson-600 text-white hover:bg-crimson-700 active:scale-[0.98]",
-  outline: "border border-ink-300 bg-transparent text-ink-800 hover:bg-ink-50",
-  link: "text-crimson-600 underline-offset-4 hover:underline p-0 h-auto",
+  default: "bg-neutral-900 text-white hover:bg-neutral-800 active:scale-[0.98] shadow-sm",
+  primary: "bg-primary-600 text-white hover:bg-primary-700 active:scale-[0.98] shadow-sm shadow-primary-200",
+  secondary: "bg-surface text-neutral-800 border border-neutral-200 hover:bg-neutral-50 active:scale-[0.98]",
+  ghost: "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900",
+  destructive: "bg-primary-600 text-white hover:bg-primary-700 active:scale-[0.98]",
+  outline: "border border-neutral-300 bg-transparent text-neutral-800 hover:bg-neutral-50",
+  link: "text-primary-600 underline-offset-4 hover:underline p-0 h-auto",
 }
 
 const sizeStyles = {

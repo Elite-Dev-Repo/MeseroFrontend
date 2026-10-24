@@ -50,7 +50,7 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-center h-64">
-          <div className="h-8 w-32 bg-ink-200 rounded animate-shimmer" />
+          <div className="h-8 w-32 bg-neutral-200 rounded animate-shimmer" />
         </div>
       </div>
     );
@@ -111,14 +111,14 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <Card className="border-2 border-crimson-200 bg-crimson-50">
+        <Card className="border-2 border-primary-200 bg-primary-50/60">
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <Building2 className="h-16 w-16 mx-auto text-crimson-500 mb-4" />
-              <h3 className="text-xl font-semibold text-ink-900 mb-2">
+              <Building2 className="h-16 w-16 mx-auto text-primary-500 mb-4" />
+              <h3 className="text-xl font-semibold text-neutral-900 mb-2">
                 No Restaurant Yet
               </h3>
-              <p className="text-ink-500 mb-6 max-w-md mx-auto">
+              <p className="text-neutral-500 mb-6 max-w-md mx-auto">
                 Create your first restaurant to start managing your menu,
                 inventory, staff, and orders.
               </p>
@@ -144,8 +144,8 @@ export default function DashboardPage() {
                   variant="outline"
                   className="h-24 flex flex-col items-center justify-center gap-2"
                 >
-                  <Plus className="h-6 w-6 text-crimson-600" />
-                  <span className="font-medium text-ink-900">
+                  <Plus className="h-6 w-6 text-primary-600" />
+                  <span className="font-medium text-neutral-900">
                     Create Restaurant
                   </span>
                 </Button>
@@ -200,7 +200,7 @@ export default function DashboardPage() {
           <p className="page-subtitle">
             {restaurant.description ||
               "Overview of your restaurant performance"}
-            <span className="ml-2 text-sm text-ink-500 font-mono">
+            <span className="ml-2 text-sm text-neutral-500 font-mono">
               • {restaurant.slug}
             </span>
           </p>
@@ -216,66 +216,66 @@ export default function DashboardPage() {
       </div>
 
       {/* Restaurant Header Card - Owner & Basic Info */}
-      <Card className="bg-gradient-to-r from-crimson-50 to-white border-crimson-100">
+      <Card className="bg-gradient-to-r from-primary-50 to-white border-primary-100">
         <CardContent className="pt-6">
           <div className="grid gap-6 md:grid-cols-4">
-            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-ink-100">
-              <div className="h-12 w-12 rounded-xl bg-crimson-100 flex items-center justify-center">
-                <User className="h-6 w-6 text-crimson-600" />
+            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-neutral-100">
+              <div className="h-12 w-12 rounded-xl bg-primary-100 flex items-center justify-center">
+                <User className="h-6 w-6 text-primary-600" />
               </div>
               <div>
-                <p className="text-sm text-ink-500">Owner</p>
-                <p className="font-semibold text-ink-900">
+                <p className="text-sm text-neutral-500">Owner</p>
+                <p className="font-semibold text-neutral-900">
                   {restaurant.owner?.first_name ||
                     restaurant.owner?.email ||
                     "Unknown"}
                 </p>
-                <p className="text-xs text-ink-500">
+                <p className="text-xs text-neutral-500">
                   {restaurant.owner?.email}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-ink-100">
-              <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                <Utensils className="h-6 w-6 text-blue-600" />
+            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-neutral-100">
+              <div className="h-12 w-12 rounded-xl bg-info-100 flex items-center justify-center">
+                <Utensils className="h-6 w-6 text-info-600" />
               </div>
               <div>
-                <p className="text-sm text-ink-500">Menu Categories</p>
-                <p className="font-bold text-2xl text-ink-900">
+                <p className="text-sm text-neutral-500">Menu Categories</p>
+                <p className="font-bold text-2xl text-neutral-900">
                   {restaurant.menu_categories?.length || 0}
                 </p>
-                <p className="text-xs text-ink-500">
+                <p className="text-xs text-neutral-500">
                   {menuItemsCount} total items
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-ink-100">
-              <div className="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center">
-                <Package className="h-6 w-6 text-green-600" />
+            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-neutral-100">
+              <div className="h-12 w-12 rounded-xl bg-success-100 flex items-center justify-center">
+                <Package className="h-6 w-6 text-success-600" />
               </div>
               <div>
-                <p className="text-sm text-ink-500">Inventory</p>
-                <p className="font-bold text-2xl text-ink-900">
+                <p className="text-sm text-neutral-500">Inventory</p>
+                <p className="font-bold text-2xl text-neutral-900">
                   {restaurant.restaurant_inventory?.length || 0} categories
                 </p>
-                <p className="text-xs text-ink-500">
+                <p className="text-xs text-neutral-500">
                   {inventoryCount} items • {lowStockCount} low stock
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-ink-100">
-              <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center">
-                <Users className="h-6 w-6 text-amber-600" />
+            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-neutral-100">
+              <div className="h-12 w-12 rounded-xl bg-warning-100 flex items-center justify-center">
+                <Users className="h-6 w-6 text-warning-600" />
               </div>
               <div>
-                <p className="text-sm text-ink-500">Staff</p>
-                <p className="font-bold text-2xl text-ink-900">
+                <p className="text-sm text-neutral-500">Staff</p>
+                <p className="font-bold text-2xl text-neutral-900">
                   {staff.length}
                 </p>
-                <p className="text-xs text-ink-500">{activeStaff} active</p>
+                <p className="text-xs text-neutral-500">{activeStaff} active</p>
               </div>
             </div>
           </div>
@@ -283,7 +283,7 @@ export default function DashboardPage() {
       </Card>
 
       {restaurantError && (
-        <div className="p-4 bg-crimson-50 border border-crimson-200 rounded-lg text-crimson-700">
+        <div className="p-4 bg-primary-50/60 border border-primary-200 rounded-lg text-primary-700">
           {restaurantError}
         </div>
       )}
@@ -305,30 +305,30 @@ export default function DashboardPage() {
               {restaurant.menu_categories.map((category: any) => (
                 <div
                   key={category.id}
-                  className="flex items-center justify-between p-4 bg-ink-50 rounded-lg border border-ink-100 hover:bg-ink-100 transition-colors"
+                  className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg border border-neutral-100 hover:bg-neutral-100 transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-crimson-100 flex items-center justify-center">
-                      <Utensils className="h-6 w-6 text-crimson-600" />
+                    <div className="h-12 w-12 rounded-lg bg-primary-100 flex items-center justify-center">
+                      <Utensils className="h-6 w-6 text-primary-600" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-ink-900">
+                        <h4 className="font-semibold text-neutral-900">
                           {category.name}
                         </h4>
                         {category.is_active ? (
-                          <span className="badge-green">Active</span>
+                          <span className="badge-success">Active</span>
                         ) : (
-                          <span className="badge-gray">Inactive</span>
+                          <span className="badge-neutral">Inactive</span>
                         )}
                       </div>
-                      <p className="text-sm text-ink-500">
+                      <p className="text-sm text-neutral-500">
                         {category.menu_item?.length || 0} items
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-ink-500 font-mono">
+                    <span className="text-sm text-neutral-500 font-mono">
                       {category.slug}
                     </span>
                     <Button variant="ghost" size="icon" asChild>
@@ -361,18 +361,18 @@ export default function DashboardPage() {
               {restaurant.restaurant_inventory.map((inv: any) => (
                 <div
                   key={inv.id}
-                  className="border-b border-ink-100 last:border-0"
+                  className="border-b border-neutral-100 last:border-0"
                 >
                   <div className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-                        <Package className="h-6 w-6 text-green-600" />
+                      <div className="h-12 w-12 rounded-lg bg-success-100 flex items-center justify-center">
+                        <Package className="h-6 w-6 text-success-600" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-ink-900">
+                        <h4 className="font-semibold text-neutral-900">
                           {inv.name}
                         </h4>
-                        <p className="text-sm text-ink-500">
+                        <p className="text-sm text-neutral-500">
                           {inv.inventory_item?.length || 0} items •{" "}
                           {inv.is_active ? "Active" : "Inactive"}
                         </p>
@@ -386,10 +386,10 @@ export default function DashboardPage() {
                               key={item.id}
                               className={`px-2 py-1 text-xs rounded-full ${
                                 item.quantity <= 0
-                                  ? "bg-red-100 text-red-700"
+                                  ? "bg-danger-100 text-danger-700"
                                   : item.quantity <= item.low_stock_threshold
-                                    ? "bg-amber-100 text-amber-700"
-                                    : "bg-green-100 text-green-700"
+                                    ? "bg-warning-100 text-warning-700"
+                                    : "bg-success-100 text-success-700"
                               }`}
                             >
                               {item.name}: {item.quantity}{" "}
@@ -397,7 +397,7 @@ export default function DashboardPage() {
                             </span>
                           ))}
                           {inv.inventory_item.length > 3 && (
-                            <span className="text-xs text-ink-500">
+                            <span className="text-xs text-neutral-500">
                               +{inv.inventory_item.length - 3} more
                             </span>
                           )}
@@ -433,7 +433,7 @@ export default function DashboardPage() {
               {staff.map((member: any) => (
                 <div
                   key={member.id ?? member.user?.id ?? member.user?.email}
-                  className="flex items-center justify-between p-4 bg-ink-50 rounded-lg border border-ink-100 hover:bg-ink-100 transition-colors"
+                  className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg border border-neutral-100 hover:bg-neutral-100 transition-colors"
                 >
                   <div className="flex items-center gap-4">
                     <Avatar className="h-10 w-10">
@@ -449,23 +449,23 @@ export default function DashboardPage() {
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-ink-900">
+                        <h4 className="font-semibold text-neutral-900">
                           {member.user?.first_name}{" "}
                           {member.user?.last_name || ""}
                         </h4>
                         <span
                           className={
                             member.role === "OWNER"
-                              ? "badge-crimson"
+                              ? "badge-primary"
                               : member.role === "MANAGER"
-                                ? "badge-blue"
-                                : "badge-green"
+                                ? "badge-info"
+                                : "badge-success"
                           }
                         >
                           {member.role}
                         </span>
                       </div>
-                      <p className="text-sm text-ink-500">
+                      <p className="text-sm text-neutral-500">
                         {member.user?.email}
                       </p>
                     </div>
@@ -473,7 +473,7 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-3">
                     <span
                       className={
-                        member.is_active ? "badge-green" : "badge-gray"
+                        member.is_active ? "badge-success" : "badge-neutral"
                       }
                     >
                       {member.is_active ? "Active" : "Inactive"}
@@ -491,10 +491,10 @@ export default function DashboardPage() {
 
       {/* Low Stock Alert */}
       {lowStockCount > 0 && (
-        <Card className="border-crimson-200 bg-crimson-50">
+        <Card className="border-primary-200 bg-primary-50/60">
           <CardHeader className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-crimson-600" />
-            <CardTitle className="text-crimson-700">Low Stock Alert</CardTitle>
+            <AlertTriangle className="h-5 w-5 text-primary-600" />
+            <CardTitle className="text-primary-700">Low Stock Alert</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -511,25 +511,25 @@ export default function DashboardPage() {
                 .map((item: any, index: number) => (
                   <div
                     key={item.id ?? index}
-                    className="flex items-center justify-between p-3 bg-white border border-ink-100 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-white border border-neutral-100 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center">
-                        <Package className="h-4 w-4 text-amber-600" />
+                      <div className="h-8 w-8 rounded-lg bg-warning-100 flex items-center justify-center">
+                        <Package className="h-4 w-4 text-warning-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-ink-900">{item.name}</p>
-                        <p className="text-sm text-ink-500">
+                        <p className="font-medium text-neutral-900">{item.name}</p>
+                        <p className="text-sm text-neutral-500">
                           {item.quantity} {item.unit_measurement} remaining
                           (threshold: {item.low_stock_threshold})
                         </p>
                       </div>
                     </div>
-                    <span className="badge-amber">Low Stock</span>
+                    <span className="badge-warning">Low Stock</span>
                   </div>
                 ))}
               {lowStockCount > 5 && (
-                <p className="text-sm text-ink-500 text-center">
+                <p className="text-sm text-neutral-500 text-center">
                   ... and {lowStockCount - 5} more items
                 </p>
               )}
@@ -551,8 +551,8 @@ export default function DashboardPage() {
               className="h-24 flex flex-col items-center justify-center gap-2"
             >
               <Link href="/dashboard/menu">
-                <Utensils className="h-6 w-6 text-crimson-600" />
-                <span className="font-semibold text-ink-900">Manage Menu</span>
+                <Utensils className="h-6 w-6 text-primary-600" />
+                <span className="font-semibold text-neutral-900">Manage Menu</span>
               </Link>
             </Button>
             <Button
@@ -561,8 +561,8 @@ export default function DashboardPage() {
               className="h-24 flex flex-col items-center justify-center gap-2"
             >
               <Link href="/dashboard/inventory">
-                <Package className="h-6 w-6 text-blue-600" />
-                <span className="font-semibold text-ink-900">
+                <Package className="h-6 w-6 text-info-600" />
+                <span className="font-semibold text-neutral-900">
                   Manage Inventory
                 </span>
               </Link>
@@ -573,8 +573,8 @@ export default function DashboardPage() {
               className="h-24 flex flex-col items-center justify-center gap-2"
             >
               <Link href="/dashboard/staff">
-                <Users className="h-6 w-6 text-green-600" />
-                <span className="font-semibold text-ink-900">Manage Staff</span>
+                <Users className="h-6 w-6 text-success-600" />
+                <span className="font-semibold text-neutral-900">Manage Staff</span>
               </Link>
             </Button>
             <Button
@@ -583,8 +583,8 @@ export default function DashboardPage() {
               className="h-24 flex flex-col items-center justify-center gap-2"
             >
               <Link href="/dashboard/settings">
-                <Settings className="h-6 w-6 text-amber-600" />
-                <span className="font-semibold text-ink-900">Settings</span>
+                <Settings className="h-6 w-6 text-warning-600" />
+                <span className="font-semibold text-neutral-900">Settings</span>
               </Link>
             </Button>
           </div>

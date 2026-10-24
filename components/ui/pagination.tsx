@@ -52,10 +52,10 @@ export function Pagination({ totalPages, currentPage, onPageChange, className }:
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className={cn(
-          'h-9 w-9 rounded-lg border border-ink-200 bg-white text-ink-600 transition-colors',
-          'hover:bg-ink-50 hover:text-ink-900',
+          'h-9 w-9 rounded-lg border border-neutral-200 bg-white text-neutral-600 transition-colors',
+          'hover:bg-neutral-50 hover:text-neutral-900',
           'disabled:cursor-not-allowed disabled:opacity-50',
-          'focus:outline-none focus:ring-2 focus:ring-crimson-500'
+          'focus:outline-none focus:ring-2 focus:ring-primary-500'
         )}
         aria-label="Previous page"
       >
@@ -64,7 +64,7 @@ export function Pagination({ totalPages, currentPage, onPageChange, className }:
 
       {pages.map((page, index) =>
         page === '...' ? (
-          <span key={`ellipsis-${index}`} className="px-2 text-ink-400">
+          <span key={`ellipsis-${index}`} className="px-2 text-neutral-400">
             ...
           </span>
         ) : (
@@ -73,10 +73,10 @@ export function Pagination({ totalPages, currentPage, onPageChange, className }:
             onClick={() => onPageChange(page as number)}
             className={cn(
               'h-9 min-w-9 rounded-lg px-3 text-sm font-medium transition-colors',
-              'focus:outline-none focus:ring-2 focus:ring-crimson-500',
+              'focus:outline-none focus:ring-2 focus:ring-primary-500',
               page === currentPage
-                ? 'bg-crimson-600 text-white'
-                : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900'
+                ? 'bg-primary-600 text-white'
+                : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
             )}
             aria-current={page === currentPage ? 'page' : undefined}
             aria-label={`Page ${page}`}
@@ -90,10 +90,10 @@ export function Pagination({ totalPages, currentPage, onPageChange, className }:
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className={cn(
-          'h-9 w-9 rounded-lg border border-ink-200 bg-white text-ink-600 transition-colors',
-          'hover:bg-ink-50 hover:text-ink-900',
+          'h-9 w-9 rounded-lg border border-neutral-200 bg-white text-neutral-600 transition-colors',
+          'hover:bg-neutral-50 hover:text-neutral-900',
           'disabled:cursor-not-allowed disabled:opacity-50',
-          'focus:outline-none focus:ring-2 focus:ring-crimson-500'
+          'focus:outline-none focus:ring-2 focus:ring-primary-500'
         )}
         aria-label="Next page"
       >

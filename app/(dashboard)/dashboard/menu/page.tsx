@@ -164,9 +164,9 @@ export default function MenuPage() {
         </div>
         <Card className="text-center py-12">
           <CardContent>
-            <Package className="h-16 w-16 mx-auto text-ink-300 mb-4" />
-            <h3 className="text-lg font-semibold text-ink-900 mb-2">No Restaurant Selected</h3>
-            <p className="text-ink-500 mb-6 max-w-md mx-auto">
+            <Package className="h-16 w-16 mx-auto text-neutral-300 mb-4" />
+            <h3 className="text-lg font-semibold text-neutral-900 mb-2">No Restaurant Selected</h3>
+            <p className="text-neutral-500 mb-6 max-w-md mx-auto">
               Create or select a restaurant to manage your menu.
             </p>
           </CardContent>
@@ -185,10 +185,10 @@ export default function MenuPage() {
           <p className="page-subtitle">Manage categories and menu items</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setActiveTab("categories")} className={activeTab === "categories" ? "bg-crimson-600 text-white" : ""}>
+          <Button variant="outline" onClick={() => setActiveTab("categories")} className={activeTab === "categories" ? "bg-primary-600 text-white" : ""}>
             Categories
           </Button>
-          <Button variant="outline" onClick={() => setActiveTab("items")} className={activeTab === "items" ? "bg-crimson-600 text-white" : ""}>
+          <Button variant="outline" onClick={() => setActiveTab("items")} className={activeTab === "items" ? "bg-primary-600 text-white" : ""}>
             Items
           </Button>
         </div>
@@ -214,7 +214,7 @@ export default function MenuPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={categoryForm.is_active} onChange={(e) => setCategoryForm(prev => ({ ...prev, is_active: e.target.checked }))} className="rounded border-ink-300 text-crimson-600 focus:ring-crimson-500" />
+                    <input type="checkbox" checked={categoryForm.is_active} onChange={(e) => setCategoryForm(prev => ({ ...prev, is_active: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
                     Active
                   </Label>
                 </div>
@@ -235,27 +235,27 @@ export default function MenuPage() {
               {categoriesLoading ? (
                 <div className="space-y-4 p-4">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-12 bg-ink-100 rounded animate-shimmer" />
+                    <div key={i} className="h-12 bg-neutral-100 rounded animate-shimmer" />
                   ))}
                 </div>
               ) : categories.length === 0 ? (
-                <div className="text-center py-8 text-ink-500">
+                <div className="text-center py-8 text-neutral-500">
                   <p>No categories yet. Create your first category to get started.</p>
                 </div>
               ) : (
-                <ul className="divide-y divide-ink-100">
+                <ul className="divide-y divide-neutral-100">
                   {categories.map((cat) => (
-                    <li key={cat.id} className="flex items-center justify-between p-4 hover:bg-ink-50">
+                    <li key={cat.id} className="flex items-center justify-between p-4 hover:bg-neutral-50">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-crimson-100 flex items-center justify-center">
-                          <ChevronDown className="h-5 w-5 text-crimson-600" />
+                        <div className="h-10 w-10 rounded-lg bg-primary-100 flex items-center justify-center">
+                          <ChevronDown className="h-5 w-5 text-primary-600" />
                         </div>
                         <div>
-                          <p className="font-medium text-ink-900">{cat.name}</p>
-                          <p className="text-sm text-ink-500">{cat.menu_item?.length || 0} items</p>
+                          <p className="font-medium text-neutral-900">{cat.name}</p>
+                          <p className="text-sm text-neutral-500">{cat.menu_item?.length || 0} items</p>
                         </div>
                       </div>
-                      <span className={cat.is_active ? "badge-green" : "badge-gray"}>
+                      <span className={cat.is_active ? "badge-success" : "badge-neutral"}>
                         {cat.is_active ? "Active" : "Inactive"}
                       </span>
                     </li>
@@ -288,7 +288,7 @@ export default function MenuPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="description">Description</Label>
-                    <textarea id="description" value={itemForm.description} onChange={(e) => setItemForm(prev => ({ ...prev, description: e.target.value }))} placeholder="Fresh tomatoes, mozzarella, basil..." className="flex h-20 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-crimson-500 focus:border-transparent" />
+                    <textarea id="description" value={itemForm.description} onChange={(e) => setItemForm(prev => ({ ...prev, description: e.target.value }))} placeholder="Fresh tomatoes, mozzarella, basil..." className="flex h-20 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
@@ -309,11 +309,11 @@ export default function MenuPage() {
                   <div className="space-y-2">
                     <Label>Image</Label>
                     <div className="flex items-center gap-4">
-                      <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-ink-200 bg-ink-50 overflow-hidden">
+                      <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 overflow-hidden">
                         {imagePreview ? (
                           <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
                         ) : (
-                          <Image className="h-8 w-8 mx-auto text-ink-400" />
+                          <Image className="h-8 w-8 mx-auto text-neutral-400" />
                         )}
                         <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" />
                       </div>
@@ -322,19 +322,19 @@ export default function MenuPage() {
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={itemForm.is_available} onChange={(e) => setItemForm(prev => ({ ...prev, is_available: e.target.checked }))} className="rounded border-ink-300 text-crimson-600 focus:ring-crimson-500" />
+                      <input type="checkbox" checked={itemForm.is_available} onChange={(e) => setItemForm(prev => ({ ...prev, is_available: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
                       Available
                     </Label>
                     <Label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={itemForm.is_vegetarian} onChange={(e) => setItemForm(prev => ({ ...prev, is_vegetarian: e.target.checked }))} className="rounded border-ink-300 text-crimson-600 focus:ring-crimson-500" />
+                      <input type="checkbox" checked={itemForm.is_vegetarian} onChange={(e) => setItemForm(prev => ({ ...prev, is_vegetarian: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
                       Vegetarian
                     </Label>
                     <Label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={itemForm.is_vegan} onChange={(e) => setItemForm(prev => ({ ...prev, is_vegan: e.target.checked }))} className="rounded border-ink-300 text-crimson-600 focus:ring-crimson-500" />
+                      <input type="checkbox" checked={itemForm.is_vegan} onChange={(e) => setItemForm(prev => ({ ...prev, is_vegan: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
                       Vegan
                     </Label>
                     <Label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={itemForm.is_gluten_free} onChange={(e) => setItemForm(prev => ({ ...prev, is_gluten_free: e.target.checked }))} className="rounded border-ink-300 text-crimson-600 focus:ring-crimson-500" />
+                      <input type="checkbox" checked={itemForm.is_gluten_free} onChange={(e) => setItemForm(prev => ({ ...prev, is_gluten_free: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
                       Gluten Free
                     </Label>
                   </div>
@@ -352,7 +352,7 @@ export default function MenuPage() {
 
             <div className="flex gap-2">
               <div className="relative flex-1 max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <Input placeholder="Search items..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
               </div>
               <Select
@@ -369,48 +369,48 @@ export default function MenuPage() {
               {itemsLoading ? (
                 <div className="space-y-4 p-4">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-20 bg-ink-100 rounded animate-shimmer" />
+                    <div key={i} className="h-20 bg-neutral-100 rounded animate-shimmer" />
                   ))}
                 </div>
               ) : menuItems.length === 0 ? (
-                <div className="text-center py-8 text-ink-500">
+                <div className="text-center py-8 text-neutral-500">
                   <p>No menu items yet. Add your first item to get started.</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-ink-200 text-left text-sm text-ink-500">
-                        <th className="pb-3 font-medium text-ink-900">Image</th>
-                        <th className="pb-3 font-medium text-ink-900">Name</th>
-                        <th className="pb-3 font-medium text-ink-900">Category</th>
-                        <th className="pb-3 font-medium text-ink-900">Price</th>
-                        <th className="pb-3 font-medium text-ink-900">Status</th>
-                        <th className="pb-3 font-medium text-ink-900">Actions</th>
+                      <tr className="border-b border-neutral-200 text-left text-sm text-neutral-500">
+                        <th className="pb-3 font-medium text-neutral-900">Image</th>
+                        <th className="pb-3 font-medium text-neutral-900">Name</th>
+                        <th className="pb-3 font-medium text-neutral-900">Category</th>
+                        <th className="pb-3 font-medium text-neutral-900">Price</th>
+                        <th className="pb-3 font-medium text-neutral-900">Status</th>
+                        <th className="pb-3 font-medium text-neutral-900">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-ink-100">
+                    <tbody className="divide-y divide-neutral-100">
                       {menuItems.map((item) => (
-                        <tr key={item.id} className="hover:bg-ink-50">
+                        <tr key={item.id} className="hover:bg-neutral-50">
                           <td className="py-4">
-                            <div className="h-12 w-12 rounded-lg bg-ink-100 flex items-center justify-center overflow-hidden">
+                            <div className="h-12 w-12 rounded-lg bg-neutral-100 flex items-center justify-center overflow-hidden">
                               {item.image ? (
                                 <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                               ) : (
-                                <Image className="h-6 w-6 text-ink-400" />
+                                <Image className="h-6 w-6 text-neutral-400" />
                               )}
                             </div>
                           </td>
                           <td className="py-4">
-                            <p className="font-medium text-ink-900">{item.name}</p>
-                            {item.description && <p className="text-sm text-ink-500 truncate max-w-xs">{item.description}</p>}
+                            <p className="font-medium text-neutral-900">{item.name}</p>
+                            {item.description && <p className="text-sm text-neutral-500 truncate max-w-xs">{item.description}</p>}
                           </td>
                           <td className="py-4">
-                            <span className="badge-crimson">{item.category_name || item.category}</span>
+                            <span className="badge-primary">{item.category_name || item.category}</span>
                           </td>
-                          <td className="py-4 font-semibold text-ink-900">{formatCurrency(item.price)}</td>
+                          <td className="py-4 font-semibold text-neutral-900">{formatCurrency(item.price)}</td>
                           <td className="py-4">
-                            <span className={item.is_available ? "badge-green" : "badge-gray"}>
+                            <span className={item.is_available ? "badge-success" : "badge-neutral"}>
                               {item.is_available ? "Available" : "Unavailable"}
                             </span>
                           </td>
@@ -420,7 +420,7 @@ export default function MenuPage() {
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item.id)}>
-                                <Trash2 className="h-4 w-4 text-crimson-600" />
+                                <Trash2 className="h-4 w-4 text-primary-600" />
                               </Button>
                             </div>
                           </td>

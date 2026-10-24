@@ -5,14 +5,13 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
+  ClipboardList,
   Utensils,
   Package,
   Users,
   Settings,
-  ChevronLeft,
-  ChevronRight,
+  PanelRight,
   Menu,
-  X,
   Plus,
   Building2,
 } from "lucide-react";
@@ -31,6 +30,7 @@ import { useRestaurant } from "@/hooks/useRestaurant";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Orders", href: "/dashboard/orders", icon: ClipboardList },
   { name: "Menu", href: "/dashboard/menu", icon: Utensils },
   { name: "Inventory", href: "/dashboard/inventory", icon: Package },
   { name: "Staff", href: "/dashboard/staff", icon: Users },
@@ -64,20 +64,25 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-40 flex flex-col bg-white border-r border-ink-200 transition-all duration-300 ease-in-out",
+          "fixed lg:static inset-y-0 left-0 z-40 flex flex-col bg-white border-r border-neutral-200 transition-all duration-300 ease-in-out",
           isCollapsed ? "w-16" : "w-[var(--sidebar-width)]",
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
           "lg:translate-x-0",
         )}
         aria-label="Sidebar"
       >
-        <div className="flex h-16 items-center justify-between px-4 border-b border-ink-200">
+        <div
+          className={cn(
+            "flex h-16 items-center border-b border-neutral-200",
+            isCollapsed ? "justify-center px-2" : "justify-between px-4",
+          )}
+        >
           {!isCollapsed && (
             <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-crimson-600 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center">
                 <Utensils className="h-5 w-5 text-white" />
               </div>
-              <span className="font-display font-bold text-lg text-ink-900">
+              <span className="font-display font-bold text-lg text-neutral-900">
                 Mesero
               </span>
             </Link>
@@ -86,31 +91,40 @@ export function Sidebar() {
             onClick={() => setIsCollapsed(!isCollapsed)}
             variant="ghost"
             size="icon"
-            className={cn("lg:hidden", isCollapsed && "hidden")}
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {isCollapsed ? (
-              <ChevronRight className="h-5 w-5" />
-            ) : (
-              <ChevronLeft className="h-5 w-5" />
-            )}
+            <PanelRight
+              className={cn(
+                "h-5 w-5 transition-transform duration-300",
+                isCollapsed && "rotate-180",
+              )}
+            />
           </Button>
         </div>
 
         <nav
-          className="flex-1 overflow-y-auto p-4 space-y-1"
+          className="flex-1 overflow-y-auto no-scrollbar space-y-1"
           role="navigation"
           aria-label="Main navigation"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-semibold uppercase text-ink-500">
-              Restaurants
-            </h3>
+          <div
+            className={cn(
+              "mb-4 flex items-center",
+              isCollapsed ? "justify-center p-4" : "justify-between p-4",
+            )}
+          >
+            {!isCollapsed && (
+              <h3 className="text-xs font-semibold uppercase text-neutral-500">
+                Restaurants
+              </h3>
+            )}
             <Button
               variant="ghost"
               size="icon-sm"
               onClick={() => setIsDialogOpen(true)}
               aria-label="Add restaurant"
+              title="Add restaurant"
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -123,29 +137,32 @@ export function Sidebar() {
                 <li key={restaurant.slug}>
                   <button
                     onClick={() => handleRestaurantSelect(restaurant.slug)}
+                    title={isCollapsed ? restaurant.name : undefined}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-600 transition-all duration-150 cursor-pointer select-none",
-                      "hover:bg-ink-50 hover:text-ink-900",
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-medium text-neutral-600 transition-all duration-150 cursor-pointer select-none",
+                      "hover:bg-success-50 hover:text-neutral-900 hover:border-r-4 border-r-primary-500",
+                      isCollapsed && "justify-center px-2",
                       currentRestaurant?.slug === restaurant.slug &&
-                        "bg-crimson-50 text-crimson-700 font-medium",
+                        "bg-primary-50/60 text-primary-700 border-r-4 border-r-primary-500 font-medium",
                     )}
                   >
-                    <div className="h-8 w-8 rounded-lg bg-crimson-100 flex items-center justify-center flex-shrink-0">
-                      <Building2 className="h-4 w-4 text-crimson-600" />
+                    <div className="h-6 w-8 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
+                      <Building2 className="h-4 w-4 text-primary-600" />
                     </div>
                     {!isCollapsed && (
                       <span className="truncate flex-1">{restaurant.name}</span>
-                    )}
-                    {currentRestaurant?.slug === restaurant.slug && (
-                      <div className="h-2 w-2 rounded-full bg-crimson-600" />
                     )}
                   </button>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="text-center py-4 text-ink-500 text-sm">
-              <p>No restaurants yet</p>
+            <div className="text-center py-4 text-neutral-500 text-sm">
+              {isCollapsed ? (
+                <Building2 className="h-4 w-4 mx-auto" />
+              ) : (
+                <p>No restaurants yet</p>
+              )}
             </div>
           )}
 
@@ -163,13 +180,18 @@ export function Sidebar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={cn("nav-item", isActive && "active")}
+                  title={isCollapsed ? item.name : undefined}
+                  className={cn(
+                    "nav-item",
+                    isActive && "active",
+                    isCollapsed && "justify-center px-0",
+                  )}
                   onClick={() => setIsMobileOpen(false)}
                 >
                   <item.icon
                     className={cn(
                       "nav-icon h-5 w-5 flex-shrink-0",
-                      isActive && "text-crimson-600",
+                      isActive && "text-primary-600 ",
                     )}
                     aria-hidden="true"
                   />
@@ -180,13 +202,15 @@ export function Sidebar() {
           </nav>
         </nav>
 
-        <div className="p-4 border-t border-ink-200">
+        <div
+          className={cn("border-t border-neutral-200", isCollapsed ? "p-2" : "p-4")}
+        >
           <Separator className="mb-4" />
 
           {!isCollapsed && user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-600 hover:bg-ink-50 hover:text-ink-900 transition-all duration-150">
+                <button className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-all duration-150">
                   <Avatar className="h-9 w-9">
                     <AvatarImage
                       src={user.avatar_url || undefined}
@@ -197,10 +221,10 @@ export function Sidebar() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0 text-left">
-                    <p className="truncate font-medium text-ink-900">
+                    <p className="truncate font-medium text-neutral-900">
                       {user.name}
                     </p>
-                    <p className="truncate text-xs text-ink-500">
+                    <p className="truncate text-xs text-neutral-500">
                       {user.email}
                     </p>
                   </div>
@@ -230,7 +254,7 @@ export function Sidebar() {
           {isCollapsed && user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex w-full items-center justify-center px-3 py-2.5 rounded-lg transition-colors hover:bg-ink-50">
+                <button className="flex w-full items-center justify-center rounded-lg px-0 py-2.5 transition-colors hover:bg-neutral-50">
                   <Avatar className="h-9 w-9">
                     <AvatarImage
                       src={user.avatar_url || undefined}
