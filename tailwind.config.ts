@@ -9,9 +9,10 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['var(--font-syne)', 'sans-serif'],
-        body: ['var(--font-dm-sans)', 'sans-serif'],
-        mono: ['var(--font-jetbrains-mono)', 'monospace'],
+        display: ['var(--font-space-mono)', 'monospace'],
+        body: ['var(--font-space-mono)', 'monospace'],
+        mono: ['var(--font-space-mono)', 'monospace'],
+        sans: ['var(--font-space-mono)', 'monospace'],
       },
       colors: {
         primary: {

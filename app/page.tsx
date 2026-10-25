@@ -26,6 +26,9 @@ import {
   Zap,
 } from "lucide-react";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Napkins02Icon } from "@hugeicons/core-free-icons";
+
 const navLinks = [
   { href: "#features", label: "Features" },
   { href: "#how-it-works", label: "How it works" },
@@ -165,9 +168,12 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 border-b border-neutral-100/80  backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 shadow-sm shadow-primary-200">
-              <Utensils className="h-5 w-5 text-white" />
-            </div>
+            <HugeiconsIcon
+              icon={Napkins02Icon}
+              className="h-5 w-5 text-neutral-800"
+              size={2.5}
+            />
+
             <span className="font-display text-xl font-bold tracking-tight text-neutral-900">
               Mesero
             </span>
@@ -272,7 +278,7 @@ export default function HomePage() {
                   <p>Elite</p>
                   <FolderCog className="h-3.5 w-3.5" />
                 </div>{" "}
-                <p className="tracking-wide font-semibold text-sm px-3">
+                <p className="tracking-wide text-neutral-800 font-semibold text-sm px-3">
                   Restaurant operations, simplified.
                 </p>
               </div>

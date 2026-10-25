@@ -27,6 +27,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
 import { useRestaurant } from "@/hooks/useRestaurant";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Napkins02Icon } from "@hugeicons/core-free-icons";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -80,7 +82,10 @@ export function Sidebar() {
           {!isCollapsed && (
             <Link href="/" className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center">
-                <Utensils className="h-5 w-5 text-white" />
+                <HugeiconsIcon
+                  icon={Napkins02Icon}
+                  className="h-5 w-5 text-white"
+                />
               </div>
               <span className="font-display font-bold text-lg text-neutral-900">
                 Mesero
@@ -91,6 +96,7 @@ export function Sidebar() {
             onClick={() => setIsCollapsed(!isCollapsed)}
             variant="ghost"
             size="icon"
+            className="hidden lg:inline-flex"
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -203,7 +209,10 @@ export function Sidebar() {
         </nav>
 
         <div
-          className={cn("border-t border-neutral-200", isCollapsed ? "p-2" : "p-4")}
+          className={cn(
+            "border-t border-neutral-200",
+            isCollapsed ? "p-2" : "p-4",
+          )}
         >
           <Separator className="mb-4" />
 
