@@ -334,9 +334,14 @@ export default function MenuPage() {
                         ) : (
                           <Image className="h-8 w-8 mx-auto text-neutral-400" />
                         )}
-                        <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+                        <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" aria-label="Upload menu item image" />
                       </div>
-                      <Button type="button" variant="outline" className="w-fit">Upload Image</Button>
+                      <div className="flex flex-col gap-2">
+                        <Button type="button" variant="outline" className="w-fit" onClick={() => imageInputRef.current?.click()}>
+                          Upload Image
+                        </Button>
+                        <p className="text-xs text-neutral-500">Max 5MB</p>
+                      </div>
                     </div>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -358,7 +363,7 @@ export default function MenuPage() {
                     </Label>
                   </div>
                   <DialogFooter>
-                    <Button type="button" variant="secondary" onClick={() => { setEditingItem(null); setShowItemDialog(false); setItemForm({ name: "", description: "", price: "", category: "", is_available: true, is_vegetarian: false, is_vegan: false, is_gluten_free: false }); setImagePreview(null); }}>
+                    <Button type="button" variant="secondary" onClick={() => { setEditingItem(null); setShowItemDialog(false); setItemForm({ name: "", description: "", price: "", category: "", is_available: true, is_vegetarian: false, is_vegan: false, is_gluten_free: false }); setImagePreview(null); setImageFile(null); }}>
                       Cancel
                     </Button>
                     <Button type="submit" loading={itemsLoading}>
