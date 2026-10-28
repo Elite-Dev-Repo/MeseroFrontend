@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,8 @@ export default function MenuPage() {
   const [showItemDialog, setShowItemDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const [categoryForm, setCategoryForm] = useState({ name: "", is_active: true });
   const [itemForm, setItemForm] = useState({
@@ -108,6 +110,10 @@ export default function MenuPage() {
       }
     });
 
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
+
     try {
       if (editingItem) {
         toast.info("Edit functionality requires PATCH endpoint");
@@ -119,6 +125,7 @@ export default function MenuPage() {
       setEditingItem(null);
       setItemForm({ name: "", description: "", price: "", category: "", is_available: true, is_vegetarian: false, is_vegan: false, is_gluten_free: false });
       setImagePreview(null);
+      setImageFile(null);
       loadMenuItems();
     } catch (err) {
       toast.error("Failed to save menu item");
@@ -127,10 +134,21 @@ export default function MenuPage() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setImagePreview(url);
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file.");
+      e.target.value = "";
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be 5MB or smaller.");
+      e.target.value = "";
+      return;
+    }
+
+    setImagePreview(URL.createObjectURL(file));
+    setImageFile(file);
   };
 
   const handleEditItem = (item: any) => {
@@ -146,6 +164,7 @@ export default function MenuPage() {
       is_gluten_free: item.is_gluten_free || false,
     });
     if (item.image) setImagePreview(item.image);
+    setImageFile(null);
     setShowItemDialog(true);
   };
 

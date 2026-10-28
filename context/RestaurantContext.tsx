@@ -24,6 +24,7 @@ interface Restaurant {
   name: string;
   slug: string;
   logo?: string | null;
+  cover?: string | null;
   owner?: User;
   restaurant_inventory?: Inventory[];
   menu_categories?: Category[];
@@ -126,9 +127,11 @@ const getErrorMessage = (err: unknown, fallback: string): string => {
 type RestaurantPayload = Partial<
   Pick<
     Restaurant,
-    "name" | "description" | "address" | "phone" | "email" | "logo"
+    "name" | "description" | "address" | "phone" | "email" | "logo" | "cover"
   >
 >;
+
+type RestaurantUpdatePayload = RestaurantPayload | FormData;
 
 interface RestaurantContextValue {
   currentRestaurant: Restaurant | null;
@@ -140,7 +143,7 @@ interface RestaurantContextValue {
   createRestaurant: (formData: FormData) => Promise<Restaurant>;
   updateRestaurant: (
     slug: string,
-    payload: RestaurantPayload
+    payload: RestaurantUpdatePayload
   ) => Promise<Restaurant>;
   fetchCategories: (slug: string) => Promise<Category[]>;
   createCategory: (
@@ -230,7 +233,7 @@ export const RestaurantProvider = ({
   }, []);
 
   const updateRestaurant = useCallback(
-    async (slug: string, payload: RestaurantPayload) => {
+    async (slug: string, payload: RestaurantUpdatePayload) => {
       setIsLoading(true);
       setError(null);
       try {

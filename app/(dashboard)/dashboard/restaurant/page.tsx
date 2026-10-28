@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, FormEvent, ChangeEvent } from "react";
+import { useState, useEffect, useRef, FormEvent, ChangeEvent } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,27 @@ const restaurantSchema = {
   email: "",
 };
 
+const EMPTY_FORM = { ...restaurantSchema };
+
+type FormErrors = Record<string, string>;
+
+const extractApiErrors = (err: unknown): FormErrors => {
+  const data = (err as { response?: { data?: unknown } })?.response?.data;
+  if (!data || typeof data !== "object") return {};
+
+  return Object.entries(data as Record<string, unknown>).reduce<FormErrors>(
+    (acc, [key, value]) => {
+      const message = Array.isArray(value) ? value[0] : value;
+      if (typeof message === "string") acc[key] = message;
+      return acc;
+    },
+    {},
+  );
+};
+
+const firstErrorMessage = (errors: FormErrors) =>
+  Object.values(errors)[0] || null;
+
 export default function RestaurantPage() {
   const { 
     currentRestaurant, 
@@ -33,57 +54,107 @@ export default function RestaurantPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    address: "",
-    phone: "",
-    email: "",
-  });
+  const [formData, setFormData] = useState(EMPTY_FORM);
 
   const loadRestaurant = async () => {
     // Try to get user's restaurant from profile or localStorage
     // For now, we don't auto-fetch - user needs to create or we need a profile endpoint
   };
 
+  const handleFieldChange = (field: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const resetCreateForm = () => {
+    setFormData({ ...EMPTY_FORM });
+    setLogoPreview(null);
+    setCoverPreview(null);
+    setLogoFile(null);
+    setCoverFile(null);
+    setFormErrors({});
+  };
+
+  const validateForm = () => {
+    const errors: FormErrors = {};
+
+    if (!formData.name.trim()) {
+      errors.name = "Restaurant name is required.";
+    }
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = "Enter a valid email address.";
+    }
+    if (logoFile && logoFile.size > 2 * 1024 * 1024) {
+      errors.logo = "Logo must be 2MB or smaller.";
+    }
+    if (coverFile && coverFile.size > 5 * 1024 * 1024) {
+      errors.cover = "Cover image must be 5MB or smaller.";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const buildFormData = () => {
+    const payload = new FormData();
+    payload.append("name", formData.name.trim());
+    payload.append("description", formData.description.trim());
+    payload.append("address", formData.address.trim());
+    payload.append("phone", formData.phone.trim());
+    payload.append("email", formData.email.trim());
+
+    if (logoFile) payload.append("logo", logoFile);
+    if (coverFile) payload.append("cover", coverFile);
+
+    return payload;
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const formData = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value) formData.append(key, value);
-    });
+    if (!validateForm()) return;
 
-    // Add images if present
-    if (logoPreview) {
-      // logoPreview is a blob URL, would need to convert to file
-    }
-    if (coverPreview) {
-      // same for cover
-    }
-
+    setSubmitting(true);
     try {
-      await createRestaurant(formData);
+      await createRestaurant(buildFormData());
       toast.success("Restaurant created!");
       setIsDialogOpen(false);
-      setFormData({ name: "", description: "", address: "", phone: "", email: "" });
-      setLogoPreview(null);
-      setCoverPreview(null);
+      resetCreateForm();
     } catch (err) {
-      toast.error("Failed to create restaurant");
+      const errors = extractApiErrors(err);
+      setFormErrors(errors);
+      toast.error(firstErrorMessage(errors) || "Failed to create restaurant");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleUpdate = async (e: FormEvent) => {
     e.preventDefault();
     if (!currentRestaurant) return;
-    
+
+    setSubmitting(true);
     try {
-      await updateRestaurant(currentRestaurant.slug, formData);
+      await updateRestaurant(currentRestaurant.slug, buildFormData());
       toast.success("Restaurant updated!");
     } catch (err) {
-      toast.error("Failed to update restaurant");
+      const errors = extractApiErrors(err);
+      setFormErrors(errors);
+      toast.error(firstErrorMessage(errors) || "Failed to update restaurant");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -102,13 +173,212 @@ export default function RestaurantPage() {
     }
   };
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>, setter: (url: string) => void) => {
+  const handleFileChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    setPreview: (url: string | null) => void,
+    setFile: (file: File | null) => void,
+    maxSizeMb: number,
+  ) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setter(url);
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file.");
+      e.target.value = "";
+      return;
     }
+    if (file.size > maxSizeMb * 1024 * 1024) {
+      toast.error(`Image must be ${maxSizeMb}MB or smaller.`);
+      e.target.value = "";
+      return;
+    }
+
+    setPreview(URL.createObjectURL(file));
+    setFile(file);
   };
+
+  const renderFieldError = (field: string) =>
+    formErrors[field] ? (
+      <p className="text-sm text-primary-600">{formErrors[field]}</p>
+    ) : null;
+
+  const renderCreateForm = () => (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {formErrors.detail && (
+        <p className="rounded-lg bg-primary-50 px-3 py-2 text-sm text-primary-700">
+          {formErrors.detail}
+        </p>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="name">Restaurant Name *</Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) => handleFieldChange("name", e.target.value)}
+            placeholder="My Restaurant"
+            disabled={submitting}
+            required
+          />
+          {renderFieldError("name")}
+        </div>
+
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="description">Description</Label>
+          <textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => handleFieldChange("description", e.target.value)}
+            placeholder="Tell customers about your restaurant..."
+            className="flex h-24 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50"
+            rows={4}
+            disabled={submitting}
+          />
+          {renderFieldError("description")}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="address">Address</Label>
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <Input
+              id="address"
+              value={formData.address}
+              onChange={(e) => handleFieldChange("address", e.target.value)}
+              placeholder="123 Main St"
+              className="pl-10"
+              disabled={submitting}
+            />
+          </div>
+          {renderFieldError("address")}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phone">Phone</Label>
+          <div className="relative">
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <Input
+              id="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => handleFieldChange("phone", e.target.value)}
+              placeholder="+1 234 567 890"
+              className="pl-10"
+              disabled={submitting}
+            />
+          </div>
+          {renderFieldError("phone")}
+        </div>
+
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="email">Email</Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleFieldChange("email", e.target.value)}
+              placeholder="info@restaurant.com"
+              className="pl-10"
+              disabled={submitting}
+            />
+          </div>
+          {renderFieldError("email")}
+        </div>
+      </div>
+
+      <Separator className="my-4" />
+
+      <div className="space-y-2">
+        <Label>Logo</Label>
+        <div className="flex items-center gap-4">
+          <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 overflow-hidden">
+            {logoPreview ? (
+              <img src={logoPreview} alt="Logo preview" className="h-full w-full object-cover" />
+            ) : (
+              <Image className="h-8 w-8 mx-auto text-neutral-400" />
+            )}
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleFileChange(e, setLogoPreview, setLogoFile, 2)}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              aria-label="Upload logo"
+              disabled={submitting}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-fit"
+              onClick={() => logoInputRef.current?.click()}
+              disabled={submitting}
+            >
+              Upload Logo
+            </Button>
+            <p className="text-xs text-neutral-500">Recommended: 200x200px, max 2MB</p>
+          </div>
+        </div>
+        {renderFieldError("logo")}
+      </div>
+
+      <div className="space-y-2">
+        <Label>Cover Image</Label>
+        <div className="flex items-center gap-4">
+          <div className="relative h-20 w-40 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 overflow-hidden">
+            {coverPreview ? (
+              <img src={coverPreview} alt="Cover preview" className="h-full w-full object-cover" />
+            ) : (
+              <Building2 className="h-8 w-8 mx-auto text-neutral-400" />
+            )}
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleFileChange(e, setCoverPreview, setCoverFile, 5)}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              aria-label="Upload cover image"
+              disabled={submitting}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-fit"
+              onClick={() => coverInputRef.current?.click()}
+              disabled={submitting}
+            >
+              Upload Cover
+            </Button>
+            <p className="text-xs text-neutral-500">Recommended: 1200x400px, max 5MB</p>
+          </div>
+        </div>
+        {renderFieldError("cover")}
+      </div>
+
+      <DialogFooter>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            setIsDialogOpen(false);
+            resetCreateForm();
+          }}
+          disabled={submitting}
+        >
+          Cancel
+        </Button>
+        <Button type="submit" loading={submitting}>
+          Create Restaurant
+        </Button>
+      </DialogFooter>
+    </form>
+  );
 
   if (!currentRestaurant) {
     return (
@@ -129,108 +399,7 @@ export default function RestaurantPage() {
               <DialogHeader>
                 <DialogTitle>Create Restaurant</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="name">Restaurant Name *</Label>
-                    <Input id="name" {...{ value: formData.name, onChange: (e) => setFormData(prev => ({ ...prev, name: e.target.value })) }} placeholder="My Restaurant" required />
-                  </div>
-
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="description">Description</Label>
-                    <textarea
-                      id="description"
-                      {...{ value: formData.description, onChange: (e) => setFormData(prev => ({ ...prev, description: e.target.value })) }}
-                      placeholder="Tell customers about your restaurant..."
-                      className="flex h-24 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      rows={4}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Address</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                      <Input id="address" {...{ value: formData.address, onChange: (e) => setFormData(prev => ({ ...prev, address: e.target.value })) }} placeholder="123 Main St" className="pl-10" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                      <Input id="phone" type="tel" {...{ value: formData.phone, onChange: (e) => setFormData(prev => ({ ...prev, phone: e.target.value })) }} placeholder="+1 234 567 890" className="pl-10" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                      <Input id="email" type="email" {...{ value: formData.email, onChange: (e) => setFormData(prev => ({ ...prev, email: e.target.value })) }} placeholder="info@restaurant.com" className="pl-10" />
-                    </div>
-                  </div>
-                </div>
-
-                <Separator className="my-4" />
-
-                <div className="space-y-2">
-                  <Label>Logo</Label>
-                  <div className="flex items-center gap-4">
-                    <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 overflow-hidden">
-                      {logoPreview ? (
-                        <img src={logoPreview} alt="Logo preview" className="h-full w-full object-cover" />
-                      ) : (
-                        <Image className="h-8 w-8 mx-auto text-neutral-400" />
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleFileChange(e, setLogoPreview)}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                        aria-label="Upload logo"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Button type="button" variant="outline" className="w-fit">Upload Logo</Button>
-                      <p className="text-xs text-neutral-500">Recommended: 200x200px, max 2MB</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Cover Image</Label>
-                  <div className="flex items-center gap-4">
-                    <div className="relative h-20 w-40 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 overflow-hidden">
-                      {coverPreview ? (
-                        <img src={coverPreview} alt="Cover preview" className="h-full w-full object-cover" />
-                      ) : (
-                        <Building2 className="h-8 w-8 mx-auto text-neutral-400" />
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleFileChange(e, setCoverPreview)}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                        aria-label="Upload cover image"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Button type="button" variant="outline" className="w-fit">Upload Cover</Button>
-                      <p className="text-xs text-neutral-500">Recommended: 1200x400px, max 5MB</p>
-                    </div>
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <Button type="button" variant="secondary" onClick={() => { setIsDialogOpen(false); setFormData({ name: "", description: "", address: "", phone: "", email: "" }); setLogoPreview(null); setCoverPreview(null); }}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" loading={false}>
-                    Create Restaurant
-                  </Button>
-                </DialogFooter>
-              </form>
+              {renderCreateForm()}
             </DialogContent>
           </Dialog>
         </div>
@@ -253,108 +422,7 @@ export default function RestaurantPage() {
                 <DialogHeader>
                   <DialogTitle>Create Restaurant</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2 sm:col-span-2">
-                      <Label htmlFor="name">Restaurant Name *</Label>
-                      <Input id="name" {...{ value: formData.name, onChange: (e) => setFormData(prev => ({ ...prev, name: e.target.value })) }} placeholder="My Restaurant" required />
-                    </div>
-
-                    <div className="space-y-2 sm:col-span-2">
-                      <Label htmlFor="description">Description</Label>
-                      <textarea
-                        id="description"
-                        {...{ value: formData.description, onChange: (e) => setFormData(prev => ({ ...prev, description: e.target.value })) }}
-                        placeholder="Tell customers about your restaurant..."
-                        className="flex h-24 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        rows={4}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="address">Address</Label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                        <Input id="address" {...{ value: formData.address, onChange: (e) => setFormData(prev => ({ ...prev, address: e.target.value })) }} placeholder="123 Main St" className="pl-10" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone</Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                        <Input id="phone" type="tel" {...{ value: formData.phone, onChange: (e) => setFormData(prev => ({ ...prev, phone: e.target.value })) }} placeholder="+1 234 567 890" className="pl-10" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                        <Input id="email" type="email" {...{ value: formData.email, onChange: (e) => setFormData(prev => ({ ...prev, email: e.target.value })) }} placeholder="info@restaurant.com" className="pl-10" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator className="my-4" />
-
-                  <div className="space-y-2">
-                    <Label>Logo</Label>
-                    <div className="flex items-center gap-4">
-                      <div className="relative h-20 w-20 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 overflow-hidden">
-                        {logoPreview ? (
-                          <img src={logoPreview} alt="Logo preview" className="h-full w-full object-cover" />
-                        ) : (
-                          <Image className="h-8 w-8 mx-auto text-neutral-400" />
-                        )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleFileChange(e, setLogoPreview)}
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                          aria-label="Upload logo"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <Button type="button" variant="outline" className="w-fit">Upload Logo</Button>
-                        <p className="text-xs text-neutral-500">Recommended: 200x200px, max 2MB</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Cover Image</Label>
-                    <div className="flex items-center gap-4">
-                      <div className="relative h-20 w-40 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 overflow-hidden">
-                        {coverPreview ? (
-                          <img src={coverPreview} alt="Cover preview" className="h-full w-full object-cover" />
-                        ) : (
-                          <Building2 className="h-8 w-8 mx-auto text-neutral-400" />
-                        )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleFileChange(e, setCoverPreview)}
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                          aria-label="Upload cover image"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <Button type="button" variant="outline" className="w-fit">Upload Cover</Button>
-                        <p className="text-xs text-neutral-500">Recommended: 1200x400px, max 5MB</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <DialogFooter>
-                    <Button type="button" variant="secondary" onClick={() => { setIsDialogOpen(false); setFormData({ name: "", description: "", address: "", phone: "", email: "" }); setLogoPreview(null); setCoverPreview(null); }}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" loading={false}>
-                      Create Restaurant
-                    </Button>
-                  </DialogFooter>
-                </form>
+                {renderCreateForm()}
               </DialogContent>
             </Dialog>
           </CardContent>
@@ -383,6 +451,24 @@ export default function RestaurantPage() {
             <CardTitle>Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {(currentRestaurant.logo || currentRestaurant.cover) && (
+              <div className="space-y-2">
+                {currentRestaurant.cover && (
+                  <img
+                    src={currentRestaurant.cover}
+                    alt={`${currentRestaurant.name} cover`}
+                    className="h-40 w-full rounded-lg object-cover"
+                  />
+                )}
+                {currentRestaurant.logo && (
+                  <img
+                    src={currentRestaurant.logo}
+                    alt={`${currentRestaurant.name} logo`}
+                    className="h-16 w-16 rounded-lg object-cover"
+                  />
+                )}
+              </div>
+            )}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
                 <Label>Name</Label>
