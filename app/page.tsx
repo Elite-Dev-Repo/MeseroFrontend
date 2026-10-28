@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,9 +26,6 @@ import {
   X,
   Zap,
 } from "lucide-react";
-
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Napkins02Icon } from "@hugeicons/core-free-icons";
 
 const navLinks = [
   { href: "#features", label: "Features" },
@@ -168,10 +166,12 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 border-b border-neutral-100/80  backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <HugeiconsIcon
-              icon={Napkins02Icon}
-              className="h-5 w-5 text-neutral-800"
-              size={2.5}
+            <Image
+              src="/logo.png"
+              alt="Mesero logo"
+              width={632}
+              height={395}
+              className="h-8 w-8 object-cover"
             />
 
             <span className="font-display text-xl font-bold tracking-tight text-neutral-900">
@@ -830,9 +830,13 @@ export default function HomePage() {
           <div className="grid gap-10 md:grid-cols-4">
             <div className="md:col-span-2">
               <Link href="/" className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600">
-                  <Utensils className="h-5 w-5 text-white" />
-                </div>
+                <Image
+                  src="/logo.png"
+                  alt="Mesero logo"
+                  width={632}
+                  height={395}
+                  className="h-9 w-9 object-cover"
+                />
                 <span className="font-display text-lg font-bold text-neutral-900">
                   Mesero
                 </span>

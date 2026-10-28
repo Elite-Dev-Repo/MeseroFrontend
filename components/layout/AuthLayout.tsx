@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { Utensils } from "lucide-react";
+import Image from "next/image";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -20,9 +20,13 @@ export function AuthLayout({ children, className }: AuthLayoutProps) {
             href="/"
             className="flex items-center justify-center gap-2 mb-8"
           >
-            <div className="h-12 w-12 rounded-xl bg-primary-600 flex items-center justify-center">
-              <Utensils className="h-7 w-7 text-white" />
-            </div>
+            <Image
+              src="/logo.png"
+              alt="Mesero logo"
+              width={632}
+              height={395}
+              className="h-12 w-12 object-cover invert"
+            />
             <span className="font-display font-bold text-2xl text-white">
               Mesero
             </span>

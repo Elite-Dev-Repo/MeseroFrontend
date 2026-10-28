@@ -2,13 +2,15 @@
 
 import { useState, FormEvent, ChangeEvent } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Utensils, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -19,11 +21,18 @@ import {
 } from "@/components/ui/card";
 
 interface RegisterForm {
-  name: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
   email: string;
   password: string;
   confirmPassword: string;
 }
+
+const GENDER_OPTIONS = [
+  { value: "Male", label: "Male" },
+  { value: "Female", label: "Female" },
+];
 
 const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const validatePassword = (password: string) => password.length >= 8;
@@ -34,22 +43,34 @@ export default function RegisterPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState<RegisterForm>({
-    name: "",
+    firstName: "",
+    lastName: "",
+    gender: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!form.name.trim() || form.name.trim().length < 2) {
-      toast.error("Name must be at least 2 characters.");
+    if (form.firstName.trim().length < 2) {
+      toast.error("First name must be at least 2 characters.");
+      return;
+    }
+    if (form.lastName.trim().length < 2) {
+      toast.error("Last name must be at least 2 characters.");
+      return;
+    }
+    if (!form.gender) {
+      toast.error("Please select your gender.");
       return;
     }
     if (!validateEmail(form.email)) {
@@ -67,11 +88,22 @@ export default function RegisterPage() {
 
     setSubmitting(true);
     try {
-      await registerUser(form.name.trim(), form.email.trim(), form.password);
+      await registerUser({
+        first_name: form.firstName.trim(),
+        last_name: form.lastName.trim(),
+        gender: form.gender,
+        email: form.email.trim(),
+        password: form.password,
+      });
       toast.success("Verification code sent to your email.");
       router.push("/verify-email");
     } catch (err: any) {
-      const message = err.response?.data?.detail || "Registration failed. Please try again.";
+      const data = err.response?.data;
+      const fieldError =
+        data && typeof data === "object"
+          ? Object.values(data).flat().find((value) => typeof value === "string")
+          : null;
+      const message = fieldError || data?.detail || "Registration failed. Please try again.";
       toast.error(message);
     } finally {
       setSubmitting(false);
@@ -82,9 +114,13 @@ export default function RegisterPage() {
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
         <Link href="/" className="flex items-center justify-center gap-2 mb-6">
-          <div className="h-12 w-12 rounded-xl bg-primary-600 flex items-center justify-center">
-            <Utensils className="h-7 w-7 text-white" />
-          </div>
+          <Image
+            src="/logo.png"
+            alt="Mesero logo"
+            width={632}
+            height={395}
+            className="h-12 w-12 object-cover"
+          />
           <span className="font-display font-bold text-2xl text-neutral-900">Mesero</span>
         </Link>
         <h1 className="text-2xl font-display font-bold text-neutral-900">Create your account</h1>
@@ -98,17 +134,46 @@ export default function RegisterPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  name="firstName"
+                  placeholder="John"
+                  value={form.firstName}
+                  onChange={handleChange}
+                  disabled={submitting || isLoading}
+                  autoComplete="given-name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  name="lastName"
+                  placeholder="Doe"
+                  value={form.lastName}
+                  onChange={handleChange}
+                  disabled={submitting || isLoading}
+                  autoComplete="family-name"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                type="text"
-                name="name"
-                placeholder="John Doe"
-                value={form.name}
+              <Label htmlFor="gender">Gender</Label>
+              <Select
+                id="gender"
+                name="gender"
+                value={form.gender}
                 onChange={handleChange}
                 disabled={submitting || isLoading}
-                autoComplete="name"
+                options={GENDER_OPTIONS}
+                placeholder="Select gender"
               />
             </div>
 

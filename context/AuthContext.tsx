@@ -24,12 +24,20 @@ interface ProfileUpdatePayload {
   gender?: string;
 }
 
+interface RegisterPayload {
+  first_name: string;
+  last_name: string;
+  gender: string;
+  email: string;
+  password: string;
+}
+
 interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: User | null;
   login: (email: string, password: string) => Promise<any>;
-  register: (name: string, email: string, password: string) => Promise<any>;
+  register: (payload: RegisterPayload) => Promise<any>;
   verifyEmail: (code: string, email: string) => Promise<any>;
   resendOtp: (email: string) => Promise<any>;
   logout: () => void;
@@ -109,10 +117,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  const register = useCallback(async (name: string, email: string, password: string) => {
+  const register = useCallback(async (payload: RegisterPayload) => {
     setIsLoading(true);
     try {
-      const data = await authApi.register(name, email, password);
+      const data = await authApi.register(payload);
       return data;
     } finally {
       setIsLoading(false);

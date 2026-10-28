@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -27,8 +28,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
 import { useRestaurant } from "@/hooks/useRestaurant";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Napkins02Icon } from "@hugeicons/core-free-icons";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -81,12 +80,13 @@ export function Sidebar() {
         >
           {!isCollapsed && (
             <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center">
-                <HugeiconsIcon
-                  icon={Napkins02Icon}
-                  className="h-5 w-5 text-white"
-                />
-              </div>
+              <Image
+                src="/logo.png"
+                alt="Mesero logo"
+                width={632}
+                height={395}
+                className="h-8 w-8 object-cover"
+              />
               <span className="font-display font-bold text-lg text-neutral-900">
                 Mesero
               </span>

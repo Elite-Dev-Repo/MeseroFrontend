@@ -2,8 +2,9 @@
 
 import { useState, FormEvent, ChangeEvent } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Utensils, Mail, Loader2, CheckCircle2 } from "lucide-react";
+import { Mail, Loader2, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -96,9 +97,13 @@ export default function VerifyEmailPage() {
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
         <Link href="/" className="flex items-center justify-center gap-2 mb-6">
-          <div className="h-12 w-12 rounded-xl bg-primary-600 flex items-center justify-center">
-            <Utensils className="h-7 w-7 text-white" />
-          </div>
+          <Image
+            src="/logo.png"
+            alt="Mesero logo"
+            width={632}
+            height={395}
+            className="h-12 w-12 object-cover"
+          />
           <span className="font-display font-bold text-2xl text-neutral-900">Mesero</span>
         </Link>
         <h1 className="text-2xl font-display font-bold text-neutral-900">Verify your email</h1>
