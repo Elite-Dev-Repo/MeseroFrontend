@@ -51,7 +51,7 @@ export default function DashboardPage() {
     let active = true;
 
     const loadOrders = async () => {
-      const data = await fetchOrders();
+      const data = await fetchOrders(currentRestaurant.slug);
       if (!active) return;
       setOrders(
         (Array.isArray(data) ? data : []).filter(

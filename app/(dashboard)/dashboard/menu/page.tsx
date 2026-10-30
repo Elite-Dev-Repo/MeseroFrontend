@@ -69,7 +69,7 @@ export default function MenuPage() {
     if (!currentRestaurant) return;
     setItemsLoading(true);
     try {
-      const data = await fetchMenuItems({ category: selectedCategory ? parseInt(selectedCategory) : undefined, search: searchQuery });
+      const data = await fetchMenuItems({ restaurant: currentRestaurant.slug, category: selectedCategory ? parseInt(selectedCategory) : undefined, search: searchQuery });
       setMenuItems(data);
     } catch (err) {
       toast.error("Failed to load menu items");

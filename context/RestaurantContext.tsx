@@ -81,7 +81,7 @@ interface InventoryItem {
 }
 
 interface Staff {
-  id?: number;
+  id: number;
   user: User;
   restaurant: string;
   role: string;
@@ -150,6 +150,7 @@ interface RestaurantContextValue {
     slug: string,
     payload: RestaurantUpdatePayload
   ) => Promise<Restaurant>;
+  deleteRestaurant: (slug: string) => Promise<void>;
   fetchCategories: (slug: string) => Promise<Category[]>;
   createCategory: (
     slug: string,
@@ -161,6 +162,7 @@ interface RestaurantContextValue {
   ) => Promise<Category>;
   deleteCategory: (categoryId: number) => Promise<void>;
   fetchMenuItems: (params?: {
+    restaurant?: string;
     category?: number;
     search?: string;
   }) => Promise<MenuItem[]>;
@@ -182,7 +184,17 @@ interface RestaurantContextValue {
     delta: number
   ) => Promise<InventoryItem>;
   fetchStaff: (slug: string) => Promise<Staff[]>;
-  fetchOrders: () => Promise<Order[]>;
+  inviteStaff: (
+    slug: string,
+    payload: { email: string; role: string }
+  ) => Promise<Staff>;
+  updateStaff: (
+    slug: string,
+    staffId: number,
+    payload: { role?: string; is_active?: boolean }
+  ) => Promise<Staff>;
+  removeStaff: (slug: string, staffId: number) => Promise<void>;
+  fetchOrders: (restaurant?: string) => Promise<Order[]>;
   createOrder: (payload: CreateOrderPayload) => Promise<Order>;
   updateOrderStatus: (orderId: number, status: string) => Promise<Order>;
   setCurrentRestaurant: (restaurant: Restaurant | null) => void;
@@ -282,6 +294,32 @@ export const RestaurantProvider = ({
     [],
   );
 
+  const deleteRestaurant = useCallback(
+    async (slug: string) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        await restaurantApi.deleteRestaurant(slug);
+        const remaining = (restaurants || []).filter((r) => r.slug !== slug);
+        setRestaurants(remaining);
+        if (currentRestaurant?.slug === slug) {
+          localStorage.removeItem("restaurant_slug");
+          if (remaining.length > 0) {
+            await fetchRestaurant(remaining[0].slug);
+          } else {
+            setCurrentRestaurant(null);
+          }
+        }
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to delete restaurant"));
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [currentRestaurant, fetchRestaurant, restaurants],
+  );
+
   const fetchCategories = useCallback(async (slug: string) => {
     setIsLoading(true);
     setError(null);
@@ -347,7 +385,7 @@ export const RestaurantProvider = ({
   }, []);
 
   const fetchMenuItems = useCallback(
-    async (params?: { category?: number; search?: string }) => {
+    async (params?: { restaurant?: string; category?: number; search?: string }) => {
       setIsLoading(true);
       setError(null);
       try {
@@ -496,11 +534,64 @@ export const RestaurantProvider = ({
     }
   }, []);
 
-  const fetchOrders = useCallback(async () => {
+  const inviteStaff = useCallback(
+    async (slug: string, payload: { email: string; role: string }) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await restaurantApi.inviteStaff(slug, payload);
+        return data;
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to invite staff"));
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
+  const updateStaff = useCallback(
+    async (
+      slug: string,
+      staffId: number,
+      payload: { role?: string; is_active?: boolean },
+    ) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await restaurantApi.updateStaff(slug, staffId, payload);
+        return data;
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to update staff"));
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
+  const removeStaff = useCallback(async (slug: string, staffId: number) => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await orderApi.getOrders();
+      await restaurantApi.removeStaff(slug, staffId);
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to remove staff"));
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const fetchOrders = useCallback(async (restaurant?: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await orderApi.getOrders(
+        restaurant ? { restaurant } : undefined,
+      );
       return data;
     } catch (err) {
       setError(getErrorMessage(err, "Failed to load orders"));
@@ -556,6 +647,7 @@ export const RestaurantProvider = ({
       fetchRestaurants,
       createRestaurant,
       updateRestaurant,
+      deleteRestaurant,
       fetchCategories,
       createCategory,
       updateCategory,
@@ -570,6 +662,9 @@ export const RestaurantProvider = ({
       deleteInventoryItem,
       adjustInventoryStock,
       fetchStaff,
+      inviteStaff,
+      updateStaff,
+      removeStaff,
       fetchOrders,
       createOrder,
       updateOrderStatus,
@@ -585,6 +680,7 @@ export const RestaurantProvider = ({
       fetchRestaurants,
       createRestaurant,
       updateRestaurant,
+      deleteRestaurant,
       fetchCategories,
       createCategory,
       updateCategory,
@@ -599,6 +695,9 @@ export const RestaurantProvider = ({
       deleteInventoryItem,
       adjustInventoryStock,
       fetchStaff,
+      inviteStaff,
+      updateStaff,
+      removeStaff,
       fetchOrders,
       createOrder,
       updateOrderStatus,

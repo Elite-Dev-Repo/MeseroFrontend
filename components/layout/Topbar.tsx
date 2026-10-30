@@ -1,11 +1,10 @@
 "use client";
 
-import { Bell, Search, Sun, Moon, Menu, X } from "lucide-react";
+import { Bell, Search, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
@@ -19,12 +18,6 @@ export function Topbar() {
   return (
     <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
       <div className="flex h-full items-center justify-between px-4 lg:px-6">
-        <div className="flex items-center gap-4 lg:hidden">
-          <Button variant="ghost" size="icon" className="-ml-2" aria-label="Open menu">
-            <Menu className="h-5 w-5" />
-          </Button>
-        </div>
-
         <div className="flex-1 max-w-xl hidden md:block">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden="true" />

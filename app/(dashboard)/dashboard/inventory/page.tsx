@@ -383,7 +383,7 @@ export default function InventoryPage() {
                         <td className="py-4 font-mono text-neutral-900">{Number(item.quantity).toLocaleString()}</td>
                         <td className="py-4 text-neutral-500">{Number(item.low_stock_threshold).toLocaleString()}</td>
                         <td className="py-4">
-                          {status === "out" && <span className="badge-red flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Out of Stock</span>}
+                          {status === "out" && <span className="badge-primary flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Out of Stock</span>}
                           {status === "low" && <span className="badge-warning flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Low Stock</span>}
                           {status === "ok" && <span className="badge-success">In Stock</span>}
                           {status === "inactive" && <span className="badge-neutral">Inactive</span>}

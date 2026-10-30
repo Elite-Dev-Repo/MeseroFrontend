@@ -84,7 +84,7 @@ export default function OrdersPage() {
     if (!currentRestaurant) return;
     setOrdersLoading(true);
     try {
-      const data = await fetchOrders();
+      const data = await fetchOrders(currentRestaurant.slug);
       setOrders(Array.isArray(data) ? data : []);
     } catch {
       toast.error("Failed to load orders");

@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef, FormEvent, ChangeEvent } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState, useRef, FormEvent, ChangeEvent } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Image, Building2, MapPin, Phone, Mail, Loader2, Trash2, Edit } from "lucide-react";
+import { Plus, Image, Building2, MapPin, Phone, Mail, Trash2, Edit } from "lucide-react";
 import { useRestaurant } from "@/hooks/useRestaurant";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const restaurantSchema = {
@@ -41,17 +42,18 @@ const firstErrorMessage = (errors: FormErrors) =>
   Object.values(errors)[0] || null;
 
 export default function RestaurantPage() {
-  const { 
-    currentRestaurant, 
-    setCurrentRestaurant,
-    isLoading, 
-    fetchRestaurant,
+  const {
+    currentRestaurant,
     createRestaurant,
     updateRestaurant,
-    error 
+    deleteRestaurant,
   } = useRestaurant();
+  const { user } = useAuth();
+  const isOwner =
+    !!user && !!currentRestaurant && currentRestaurant.owner?.id === user.id;
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -64,9 +66,28 @@ export default function RestaurantPage() {
 
   const [formData, setFormData] = useState(EMPTY_FORM);
 
-  const loadRestaurant = async () => {
-    // Try to get user's restaurant from profile or localStorage
-    // For now, we don't auto-fetch - user needs to create or we need a profile endpoint
+  const openCreateDialog = () => {
+    setDialogMode("create");
+    resetCreateForm();
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = () => {
+    if (!currentRestaurant) return;
+    setDialogMode("edit");
+    setFormData({
+      name: currentRestaurant.name || "",
+      description: currentRestaurant.description || "",
+      address: currentRestaurant.address || "",
+      phone: currentRestaurant.phone || "",
+      email: currentRestaurant.email || "",
+    });
+    setLogoPreview(currentRestaurant.logo || null);
+    setCoverPreview(currentRestaurant.cover || null);
+    setLogoFile(null);
+    setCoverFile(null);
+    setFormErrors({});
+    setIsDialogOpen(true);
   };
 
   const handleFieldChange = (field: keyof typeof formData, value: string) => {
@@ -125,34 +146,28 @@ export default function RestaurantPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
+    if (dialogMode === "edit" && !currentRestaurant) return;
 
     setSubmitting(true);
     try {
-      await createRestaurant(buildFormData());
-      toast.success("Restaurant created!");
+      if (dialogMode === "edit" && currentRestaurant) {
+        await updateRestaurant(currentRestaurant.slug, buildFormData());
+        toast.success("Restaurant updated!");
+      } else {
+        await createRestaurant(buildFormData());
+        toast.success("Restaurant created!");
+      }
       setIsDialogOpen(false);
       resetCreateForm();
     } catch (err) {
       const errors = extractApiErrors(err);
       setFormErrors(errors);
-      toast.error(firstErrorMessage(errors) || "Failed to create restaurant");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleUpdate = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!currentRestaurant) return;
-
-    setSubmitting(true);
-    try {
-      await updateRestaurant(currentRestaurant.slug, buildFormData());
-      toast.success("Restaurant updated!");
-    } catch (err) {
-      const errors = extractApiErrors(err);
-      setFormErrors(errors);
-      toast.error(firstErrorMessage(errors) || "Failed to update restaurant");
+      toast.error(
+        firstErrorMessage(errors) ||
+          (dialogMode === "edit"
+            ? "Failed to update restaurant"
+            : "Failed to create restaurant"),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -161,13 +176,14 @@ export default function RestaurantPage() {
   const handleDelete = async () => {
     if (!currentRestaurant) return;
     if (!confirm("Are you sure you want to delete this restaurant? This cannot be undone.")) return;
-    
+
     setDeleting(true);
     try {
-      // No delete endpoint in API yet
-      toast.error("Delete not implemented yet");
+      await deleteRestaurant(currentRestaurant.slug);
+      toast.success("Restaurant deleted");
     } catch (err) {
-      toast.error("Failed to delete");
+      const errors = extractApiErrors(err);
+      toast.error(firstErrorMessage(errors) || "Failed to delete restaurant");
     } finally {
       setDeleting(false);
     }
@@ -374,7 +390,7 @@ export default function RestaurantPage() {
           Cancel
         </Button>
         <Button type="submit" loading={submitting}>
-          Create Restaurant
+          {dialogMode === "edit" ? "Save Changes" : "Create Restaurant"}
         </Button>
       </DialogFooter>
     </form>
@@ -388,21 +404,26 @@ export default function RestaurantPage() {
             <h1 className="page-title">Restaurant</h1>
             <p className="page-subtitle">Create your first restaurant to get started</p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Restaurant
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Create Restaurant</DialogTitle>
-              </DialogHeader>
-              {renderCreateForm()}
-            </DialogContent>
-          </Dialog>
+          <Button onClick={openCreateDialog}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Restaurant
+          </Button>
         </div>
+
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetCreateForm();
+          }}
+        >
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create Restaurant</DialogTitle>
+            </DialogHeader>
+            {renderCreateForm()}
+          </DialogContent>
+        </Dialog>
 
         <Card className="text-center py-12">
           <CardContent>
@@ -411,20 +432,10 @@ export default function RestaurantPage() {
             <p className="text-neutral-500 mb-6 max-w-md mx-auto">
               Create your first restaurant to start managing your menu, inventory, and staff.
             </p>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="lg">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Restaurant
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Create Restaurant</DialogTitle>
-                </DialogHeader>
-                {renderCreateForm()}
-              </DialogContent>
-            </Dialog>
+            <Button size="lg" onClick={openCreateDialog}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Restaurant
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -439,11 +450,28 @@ export default function RestaurantPage() {
           <h1 className="page-title">{currentRestaurant.name}</h1>
           <p className="page-subtitle">Manage your restaurant details</p>
         </div>
-        <Button variant="outline">
+        <Button variant="outline" onClick={openCreateDialog}>
           <Plus className="h-4 w-4 mr-2" />
           Add Another
         </Button>
       </div>
+
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) resetCreateForm();
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {dialogMode === "edit" ? "Edit Restaurant" : "Create Restaurant"}
+            </DialogTitle>
+          </DialogHeader>
+          {renderCreateForm()}
+        </DialogContent>
+      </Dialog>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
@@ -513,9 +541,7 @@ export default function RestaurantPage() {
             </div>
             <div className="space-y-1">
               <Label>Status</Label>
-              <span className={currentRestaurant.is_active ? "badge-success" : "badge-neutral"}>
-                {currentRestaurant.is_active ? "Active" : "Inactive"}
-              </span>
+              <span className="badge-success">Active</span>
             </div>
             <div className="space-y-1">
               <Label>Created</Label>
@@ -526,11 +552,22 @@ export default function RestaurantPage() {
               </p>
             </div>
             <div className="pt-4 border-t border-neutral-200">
-              <Button variant="outline" className="w-full" onClick={() => { /* Edit modal */ }}>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={openEditDialog}
+                disabled={!isOwner}
+              >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Details
               </Button>
-              <Button variant="destructive" className="w-full mt-2" onClick={() => { /* Delete */ }}>
+              <Button
+                variant="destructive"
+                className="w-full mt-2"
+                onClick={handleDelete}
+                loading={deleting}
+                disabled={!isOwner}
+              >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete Restaurant
               </Button>

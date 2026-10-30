@@ -6,8 +6,8 @@ export interface CreateOrderPayload {
   items: { id: number; quantity: number }[];
 }
 
-export const getOrders = async () => {
-  const { data } = await api.get("/orders/");
+export const getOrders = async (params?: { restaurant?: string }) => {
+  const { data } = await api.get("/orders/", { params });
   return data;
 };
 

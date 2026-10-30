@@ -1,40 +1,80 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Search, Edit, Trash2, Users, Mail, Shield, Loader2, Send } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Users, Send } from "lucide-react";
 import { useRestaurant } from "@/hooks/useRestaurant";
+import { useAuth } from "@/hooks/useAuth";
+import { getErrorMessage } from "@/lib/errors";
 import { toast } from "sonner";
 
+const ROLE_OPTIONS = [
+  { value: "MANAGER", label: "Manager" },
+  { value: "HEAD_CHEF", label: "Head Chef" },
+  { value: "LINE_COOK", label: "Line Cook" },
+  { value: "WAITER", label: "Waiter / Server" },
+  { value: "CASHIER", label: "Cashier" },
+  { value: "BARTENDER", label: "Bartender" },
+  { value: "DELIVERY", label: "Delivery Driver" },
+  { value: "KITCHEN_ASSISTANT", label: "Kitchen Assistant" },
+];
+
+const ROLE_LABELS: Record<string, string> = {
+  OWNER: "Owner",
+  ...Object.fromEntries(ROLE_OPTIONS.map((option) => [option.value, option.label])),
+};
+
+interface StaffMember {
+  id: number;
+  user: {
+    id: number;
+    email: string;
+    name?: string;
+    avatar_url?: string | null;
+  };
+  role: string;
+  is_active: boolean;
+  joined_at?: string;
+}
+
 export default function StaffPage() {
-  const { 
-    currentRestaurant, 
-    isLoading: restaurantLoading,
+  const {
+    currentRestaurant,
     fetchStaff,
-    error 
+    inviteStaff,
+    updateStaff,
+    removeStaff,
   } = useRestaurant();
+  const { user } = useAuth();
+  const isOwner =
+    !!user && !!currentRestaurant && currentRestaurant.owner?.id === user.id;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [invitingEmail, setInvitingEmail] = useState("");
-  const [selectedRole, setSelectedRole] = useState("staff");
-  const [staff, setStaff] = useState<any[]>([]);
+  const [selectedRole, setSelectedRole] = useState("WAITER");
+  const [inviteSubmitting, setInviteSubmitting] = useState(false);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [staffLoading, setStaffLoading] = useState(true);
+  const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
+  const [editRole, setEditRole] = useState("WAITER");
+  const [editActive, setEditActive] = useState(true);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [removingId, setRemovingId] = useState<number | null>(null);
 
   const loadStaff = async () => {
     if (!currentRestaurant) return;
     setStaffLoading(true);
     try {
       const data = await fetchStaff(currentRestaurant.slug);
-      setStaff(data);
-    } catch (err) {
+      setStaff(Array.isArray(data) ? data : []);
+    } catch {
       toast.error("Failed to load staff");
     } finally {
       setStaffLoading(false);
@@ -43,33 +83,86 @@ export default function StaffPage() {
 
   useEffect(() => {
     if (currentRestaurant) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadStaff();
     }
-  }, [currentRestaurant, fetchStaff]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRestaurant?.slug]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!invitingEmail) return;
-    // TODO: Implement invite staff API call
-    toast.info("Invite functionality requires backend endpoint");
-    setShowInviteDialog(false);
-    setInvitingEmail("");
-  };
+    if (!currentRestaurant || !invitingEmail.trim()) return;
 
-  const handleEdit = (member: any) => {
-    toast.info("Edit functionality requires backend endpoint");
-  };
-
-  const handleRemove = (member: any) => {
-    if (confirm(`Remove ${member.user?.name || member.user?.email} from staff?`)) {
-      toast.info("Remove functionality requires backend endpoint");
+    setInviteSubmitting(true);
+    try {
+      await inviteStaff(currentRestaurant.slug, {
+        email: invitingEmail.trim(),
+        role: selectedRole,
+      });
+      toast.success("Staff member added");
+      setShowInviteDialog(false);
+      setInvitingEmail("");
+      setSelectedRole("WAITER");
+      await loadStaff();
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to add staff member"));
+    } finally {
+      setInviteSubmitting(false);
     }
   };
 
-  const filteredStaff = staff.filter(member =>
-    member.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.user?.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleEdit = (member: StaffMember) => {
+    setEditingMember(member);
+    setEditRole(member.role);
+    setEditActive(member.is_active);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentRestaurant || !editingMember) return;
+
+    setEditSubmitting(true);
+    try {
+      await updateStaff(currentRestaurant.slug, editingMember.id, {
+        role: editRole,
+        is_active: editActive,
+      });
+      toast.success("Staff member updated");
+      setEditingMember(null);
+      await loadStaff();
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to update staff member"));
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
+  const handleRemove = async (member: StaffMember) => {
+    if (!currentRestaurant) return;
+    if (!confirm(`Remove ${member.user?.name || member.user?.email} from staff?`)) {
+      return;
+    }
+
+    setRemovingId(member.id);
+    try {
+      await removeStaff(currentRestaurant.slug, member.id);
+      toast.success("Staff member removed");
+      await loadStaff();
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to remove staff member"));
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
+  const filteredStaff = staff.filter((member) => {
+    const term = searchQuery.trim().toLowerCase();
+    if (!term) return true;
+    return (
+      member.user?.name?.toLowerCase().includes(term) ||
+      member.user?.email?.toLowerCase().includes(term)
+    );
+  });
 
   if (!currentRestaurant) {
     return (
@@ -100,7 +193,7 @@ export default function StaffPage() {
         </div>
         <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
           <DialogTrigger asChild>
-            <Button>
+            <Button disabled={!isOwner}>
               <Plus className="h-4 w-4 mr-2" />
               Invite Staff
             </Button>
@@ -120,8 +213,12 @@ export default function StaffPage() {
                     value={invitingEmail}
                     onChange={(e) => setInvitingEmail(e.target.value)}
                     className="flex-1"
+                    required
                   />
                 </div>
+                <p className="text-xs text-neutral-500">
+                  The person must already have a Mesero account.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">Role *</Label>
@@ -129,10 +226,7 @@ export default function StaffPage() {
                   id="role"
                   value={selectedRole}
                   onValueChange={setSelectedRole}
-                  options={[
-                    { value: "staff", label: "Staff" },
-                    { value: "manager", label: "Manager" },
-                  ]}
+                  options={ROLE_OPTIONS}
                   placeholder="Select role"
                 />
               </div>
@@ -140,9 +234,9 @@ export default function StaffPage() {
                 <Button type="button" variant="secondary" onClick={() => { setShowInviteDialog(false); setInvitingEmail(""); }}>
                   Cancel
                 </Button>
-                <Button type="submit">
+                <Button type="submit" loading={inviteSubmitting}>
                   <Send className="h-4 w-4 mr-2" />
-                  Send Invitation
+                  Add Staff
                 </Button>
               </DialogFooter>
             </form>
@@ -202,8 +296,8 @@ export default function StaffPage() {
                       </td>
                       <td className="py-4 text-neutral-900">{member.user?.email}</td>
                       <td className="py-4">
-                        <span className={member.role === "manager" ? "badge-primary" : "badge-info"}>
-                          {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                        <span className={member.role === "MANAGER" || member.role === "OWNER" ? "badge-primary" : "badge-info"}>
+                          {ROLE_LABELS[member.role] || member.role}
                         </span>
                       </td>
                       <td className="py-4">
@@ -211,13 +305,27 @@ export default function StaffPage() {
                           {member.is_active ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      <td className="py-4 text-neutral-500">{new Date(member.joined_at).toLocaleDateString()}</td>
+                      <td className="py-4 text-neutral-500">
+                        {member.joined_at ? new Date(member.joined_at).toLocaleDateString() : "—"}
+                      </td>
                       <td className="py-4">
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => handleEdit(member)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(member)}
+                            disabled={!isOwner || member.role === "OWNER"}
+                            aria-label={`Edit ${member.user?.name || member.user?.email}`}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleRemove(member)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemove(member)}
+                            disabled={!isOwner || member.role === "OWNER" || removingId === member.id}
+                            aria-label={`Remove ${member.user?.name || member.user?.email}`}
+                          >
                             <Trash2 className="h-4 w-4 text-primary-600" />
                           </Button>
                         </div>
@@ -230,6 +338,48 @@ export default function StaffPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!editingMember} onOpenChange={(open) => { if (!open) setEditingMember(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Staff Member</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Member</Label>
+              <p className="text-neutral-900">
+                {editingMember?.user?.name || editingMember?.user?.email}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-role">Role</Label>
+              <Select
+                id="edit-role"
+                value={editRole}
+                onValueChange={setEditRole}
+                options={ROLE_OPTIONS}
+              />
+            </div>
+            <Label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={editActive}
+                onChange={(e) => setEditActive(e.target.checked)}
+                className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+              />
+              Active
+            </Label>
+            <DialogFooter>
+              <Button type="button" variant="secondary" onClick={() => setEditingMember(null)}>
+                Cancel
+              </Button>
+              <Button type="submit" loading={editSubmitting}>
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
