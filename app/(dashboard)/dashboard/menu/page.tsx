@@ -19,8 +19,12 @@ export default function MenuPage() {
     isLoading: restaurantLoading,
     fetchCategories,
     createCategory,
+    updateCategory,
+    deleteCategory,
     fetchMenuItems,
     createMenuItem,
+    updateMenuItem,
+    deleteMenuItem,
     error 
   } = useRestaurant();
 
@@ -33,6 +37,7 @@ export default function MenuPage() {
   const [itemsLoading, setItemsLoading] = useState(true);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [showItemDialog, setShowItemDialog] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any | null>(null);
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -91,13 +96,43 @@ export default function MenuPage() {
   const handleCategorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createCategory(currentRestaurant!.slug, { name: categoryForm.name, is_active: categoryForm.is_active });
-      toast.success("Category created!");
+      if (editingCategory) {
+        await updateCategory(editingCategory.id, {
+          name: categoryForm.name,
+          is_active: categoryForm.is_active,
+        });
+        toast.success("Category updated!");
+      } else {
+        await createCategory(currentRestaurant!.slug, { name: categoryForm.name, is_active: categoryForm.is_active });
+        toast.success("Category created!");
+      }
       setShowCategoryDialog(false);
+      setEditingCategory(null);
       setCategoryForm({ name: "", is_active: true });
       loadCategories();
     } catch (err) {
-      toast.error("Failed to create category");
+      toast.error(editingCategory ? "Failed to update category" : "Failed to create category");
+    }
+  };
+
+  const handleEditCategory = (category: any) => {
+    setEditingCategory(category);
+    setCategoryForm({ name: category.name, is_active: category.is_active });
+    setShowCategoryDialog(true);
+  };
+
+  const handleDeleteCategory = async (category: any) => {
+    if (!confirm(`Are you sure you want to delete "${category.name}"? Its menu items will also be removed.`)) {
+      return;
+    }
+
+    try {
+      await deleteCategory(category.id);
+      toast.success("Category deleted!");
+      loadCategories();
+      loadMenuItems();
+    } catch (err) {
+      toast.error("Failed to delete category");
     }
   };
 
@@ -116,7 +151,8 @@ export default function MenuPage() {
 
     try {
       if (editingItem) {
-        toast.info("Edit functionality requires PATCH endpoint");
+        await updateMenuItem(editingItem.id, formData);
+        toast.success("Menu item updated!");
       } else {
         await createMenuItem(formData);
         toast.success("Menu item created!");
@@ -163,14 +199,22 @@ export default function MenuPage() {
       is_vegan: item.is_vegan || false,
       is_gluten_free: item.is_gluten_free || false,
     });
-    if (item.image) setImagePreview(item.image);
+    setImagePreview(item.image || null);
     setImageFile(null);
     setShowItemDialog(true);
   };
 
-  const handleDeleteItem = async (id: number) => {
-    if (confirm("Are you sure you want to delete this item?")) {
-      toast.info("Delete functionality requires DELETE endpoint");
+  const handleDeleteItem = async (item: any) => {
+    if (!confirm(`Are you sure you want to delete "${item.name}"?`)) {
+      return;
+    }
+
+    try {
+      await deleteMenuItem(item.id);
+      toast.success("Menu item deleted!");
+      loadMenuItems();
+    } catch (err) {
+      toast.error("Failed to delete menu item");
     }
   };
 
@@ -215,7 +259,16 @@ export default function MenuPage() {
 
       {activeTab === "categories" && (
         <div className="space-y-4">
-          <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
+          <Dialog
+            open={showCategoryDialog}
+            onOpenChange={(open) => {
+              setShowCategoryDialog(open);
+              if (!open) {
+                setEditingCategory(null);
+                setCategoryForm({ name: "", is_active: true });
+              }
+            }}
+          >
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -224,7 +277,7 @@ export default function MenuPage() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Create Category</DialogTitle>
+                <DialogTitle>{editingCategory ? "Edit Category" : "Create Category"}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleCategorySubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -238,11 +291,11 @@ export default function MenuPage() {
                   </Label>
                 </div>
                 <DialogFooter>
-                  <Button type="button" variant="secondary" onClick={() => { setShowCategoryDialog(false); setCategoryForm({ name: "", is_active: true }); }}>
+                  <Button type="button" variant="secondary" onClick={() => { setEditingCategory(null); setShowCategoryDialog(false); setCategoryForm({ name: "", is_active: true }); }}>
                     Cancel
                   </Button>
                   <Button type="submit" loading={categoriesLoading}>
-                    Create
+                    {editingCategory ? "Update" : "Create"}
                   </Button>
                 </DialogFooter>
               </form>
@@ -274,9 +327,17 @@ export default function MenuPage() {
                           <p className="text-sm text-neutral-500">{cat.menu_item?.length || 0} items</p>
                         </div>
                       </div>
-                      <span className={cat.is_active ? "badge-success" : "badge-neutral"}>
-                        {cat.is_active ? "Active" : "Inactive"}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className={cat.is_active ? "badge-success" : "badge-neutral"}>
+                          {cat.is_active ? "Active" : "Inactive"}
+                        </span>
+                        <Button variant="ghost" size="icon" onClick={() => handleEditCategory(cat)} aria-label={`Edit ${cat.name}`}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteCategory(cat)} aria-label={`Delete ${cat.name}`}>
+                          <Trash2 className="h-4 w-4 text-primary-600" />
+                        </Button>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -289,7 +350,18 @@ export default function MenuPage() {
       {activeTab === "items" && (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4 items-start justify-between">
-            <Dialog open={showItemDialog} onOpenChange={setShowItemDialog}>
+            <Dialog
+              open={showItemDialog}
+              onOpenChange={(open) => {
+                setShowItemDialog(open);
+                if (!open) {
+                  setEditingItem(null);
+                  setItemForm({ name: "", description: "", price: "", category: "", is_available: true, is_vegetarian: false, is_vegan: false, is_gluten_free: false });
+                  setImagePreview(null);
+                  setImageFile(null);
+                }
+              }}
+            >
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
@@ -443,7 +515,7 @@ export default function MenuPage() {
                               <Button variant="ghost" size="icon" onClick={() => handleEditItem(item)}>
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item.id)}>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item)}>
                                 <Trash2 className="h-4 w-4 text-primary-600" />
                               </Button>
                             </div>

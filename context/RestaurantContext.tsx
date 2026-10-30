@@ -150,11 +150,18 @@ interface RestaurantContextValue {
     slug: string,
     payload: { name: string; is_active?: boolean }
   ) => Promise<Category>;
+  updateCategory: (
+    categoryId: number,
+    payload: { name?: string; is_active?: boolean }
+  ) => Promise<Category>;
+  deleteCategory: (categoryId: number) => Promise<void>;
   fetchMenuItems: (params?: {
     category?: number;
     search?: string;
   }) => Promise<MenuItem[]>;
   createMenuItem: (formData: FormData) => Promise<MenuItem>;
+  updateMenuItem: (itemId: number, formData: FormData) => Promise<MenuItem>;
+  deleteMenuItem: (itemId: number) => Promise<void>;
   fetchInventory: (slug: string) => Promise<Inventory[]>;
   fetchStaff: (slug: string) => Promise<Staff[]>;
   fetchOrders: () => Promise<Order[]>;
@@ -284,6 +291,39 @@ export const RestaurantProvider = ({
     [],
   );
 
+  const updateCategory = useCallback(
+    async (
+      categoryId: number,
+      payload: { name?: string; is_active?: boolean },
+    ) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await restaurantApi.updateCategory(categoryId, payload);
+        return data;
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to update category"));
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
+  const deleteCategory = useCallback(async (categoryId: number) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await restaurantApi.deleteCategory(categoryId);
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to delete category"));
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const fetchMenuItems = useCallback(
     async (params?: { category?: number; search?: string }) => {
       setIsLoading(true);
@@ -309,6 +349,33 @@ export const RestaurantProvider = ({
       return data;
     } catch (err) {
       setError(getErrorMessage(err, "Failed to create menu item"));
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const updateMenuItem = useCallback(async (itemId: number, formData: FormData) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await restaurantApi.updateMenuItem(itemId, formData);
+      return data;
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to update menu item"));
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const deleteMenuItem = useCallback(async (itemId: number) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await restaurantApi.deleteMenuItem(itemId);
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to delete menu item"));
       throw err;
     } finally {
       setIsLoading(false);
@@ -405,8 +472,12 @@ export const RestaurantProvider = ({
       updateRestaurant,
       fetchCategories,
       createCategory,
+      updateCategory,
+      deleteCategory,
       fetchMenuItems,
       createMenuItem,
+      updateMenuItem,
+      deleteMenuItem,
       fetchInventory,
       fetchStaff,
       fetchOrders,
@@ -426,8 +497,12 @@ export const RestaurantProvider = ({
       updateRestaurant,
       fetchCategories,
       createCategory,
+      updateCategory,
+      deleteCategory,
       fetchMenuItems,
       createMenuItem,
+      updateMenuItem,
+      deleteMenuItem,
       fetchInventory,
       fetchStaff,
       fetchOrders,
