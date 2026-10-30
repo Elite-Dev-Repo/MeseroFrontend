@@ -50,9 +50,6 @@ export default function MenuPage() {
     price: "",
     category: "",
     is_available: true,
-    is_vegetarian: false,
-    is_vegan: false,
-    is_gluten_free: false,
   });
 
   const loadCategories = async () => {
@@ -159,7 +156,7 @@ export default function MenuPage() {
       }
       setShowItemDialog(false);
       setEditingItem(null);
-      setItemForm({ name: "", description: "", price: "", category: "", is_available: true, is_vegetarian: false, is_vegan: false, is_gluten_free: false });
+      setItemForm({ name: "", description: "", price: "", category: "", is_available: true });
       setImagePreview(null);
       setImageFile(null);
       loadMenuItems();
@@ -195,9 +192,6 @@ export default function MenuPage() {
       price: item.price,
       category: item.category.toString(),
       is_available: item.is_available,
-      is_vegetarian: item.is_vegetarian || false,
-      is_vegan: item.is_vegan || false,
-      is_gluten_free: item.is_gluten_free || false,
     });
     setImagePreview(item.image || null);
     setImageFile(null);
@@ -356,7 +350,7 @@ export default function MenuPage() {
                 setShowItemDialog(open);
                 if (!open) {
                   setEditingItem(null);
-                  setItemForm({ name: "", description: "", price: "", category: "", is_available: true, is_vegetarian: false, is_vegan: false, is_gluten_free: false });
+                  setItemForm({ name: "", description: "", price: "", category: "", is_available: true });
                   setImagePreview(null);
                   setImageFile(null);
                 }
@@ -416,26 +410,12 @@ export default function MenuPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={itemForm.is_available} onChange={(e) => setItemForm(prev => ({ ...prev, is_available: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
-                      Available
-                    </Label>
-                    <Label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={itemForm.is_vegetarian} onChange={(e) => setItemForm(prev => ({ ...prev, is_vegetarian: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
-                      Vegetarian
-                    </Label>
-                    <Label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={itemForm.is_vegan} onChange={(e) => setItemForm(prev => ({ ...prev, is_vegan: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
-                      Vegan
-                    </Label>
-                    <Label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={itemForm.is_gluten_free} onChange={(e) => setItemForm(prev => ({ ...prev, is_gluten_free: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
-                      Gluten Free
-                    </Label>
-                  </div>
+                  <Label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={itemForm.is_available} onChange={(e) => setItemForm(prev => ({ ...prev, is_available: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
+                    Available
+                  </Label>
                   <DialogFooter>
-                    <Button type="button" variant="secondary" onClick={() => { setEditingItem(null); setShowItemDialog(false); setItemForm({ name: "", description: "", price: "", category: "", is_available: true, is_vegetarian: false, is_vegan: false, is_gluten_free: false }); setImagePreview(null); setImageFile(null); }}>
+                    <Button type="button" variant="secondary" onClick={() => { setEditingItem(null); setShowItemDialog(false); setItemForm({ name: "", description: "", price: "", category: "", is_available: true }); setImagePreview(null); setImageFile(null); }}>
                       Cancel
                     </Button>
                     <Button type="submit" loading={itemsLoading}>

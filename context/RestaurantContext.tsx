@@ -58,9 +58,6 @@ interface MenuItem {
   is_available: boolean;
   description: string;
   category_name?: string;
-  is_vegetarian?: boolean;
-  is_vegan?: boolean;
-  is_gluten_free?: boolean;
 }
 
 interface Inventory {
