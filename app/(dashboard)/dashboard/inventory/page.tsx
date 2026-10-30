@@ -1,16 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { Select } from "@/components/ui/select";
-import { Plus, Search, Edit, Trash2, Package, AlertTriangle, Loader2 } from "lucide-react";
+import { Plus, Minus, Search, Edit, Trash2, Package, AlertTriangle, Loader2 } from "lucide-react";
 import { useRestaurant } from "@/hooks/useRestaurant";
-import { formatCurrency } from "@/lib/format";
+import { getErrorMessage } from "@/lib/errors";
 import { toast } from "sonner";
 
 const UNIT_OPTIONS = [
@@ -33,27 +32,60 @@ const STATUS_FILTER_OPTIONS = [
   { value: "inactive", label: "Inactive" },
 ];
 
+interface InventoryItem {
+  id: number;
+  inventory: number;
+  name: string;
+  image?: string | null;
+  quantity: number;
+  unit_measurement: string;
+  low_stock_threshold: number;
+  is_available: boolean;
+}
+
+interface InventoryForm {
+  name: string;
+  unit_measurement: string;
+  quantity: string;
+  low_stock_threshold: string;
+  is_available: boolean;
+}
+
+const EMPTY_FORM: InventoryForm = {
+  name: "",
+  unit_measurement: "pcs",
+  quantity: "",
+  low_stock_threshold: "",
+  is_available: true,
+};
+
 export default function InventoryPage() {
-  const { 
-    currentRestaurant, 
-    isLoading, 
+  const {
+    currentRestaurant,
     fetchInventory,
-    error 
+    createInventoryItem,
+    updateInventoryItem,
+    deleteInventoryItem,
+    adjustInventoryStock,
   } = useRestaurant();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [inventory, setInventory] = useState<any[]>([]);
+  const [showDialog, setShowDialog] = useState(false);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(true);
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [formData, setFormData] = useState<InventoryForm>(EMPTY_FORM);
+  const [submitting, setSubmitting] = useState(false);
+  const [adjustingId, setAdjustingId] = useState<number | null>(null);
 
-  const loadInventory = async () => {
+  const reloadInventory = async () => {
     if (!currentRestaurant) return;
     setInventoryLoading(true);
     try {
       const data = await fetchInventory(currentRestaurant.slug);
       setInventory(data);
-    } catch (err) {
+    } catch {
       toast.error("Failed to load inventory");
     } finally {
       setInventoryLoading(false);
@@ -61,44 +93,136 @@ export default function InventoryPage() {
   };
 
   useEffect(() => {
-    if (currentRestaurant) {
-      loadInventory();
-    }
+    if (!currentRestaurant) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchInventory(currentRestaurant.slug);
+        if (!cancelled) setInventory(data);
+      } catch {
+        if (!cancelled) toast.error("Failed to load inventory");
+      } finally {
+        if (!cancelled) setInventoryLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [currentRestaurant, fetchInventory]);
 
-  const getStockStatus = (item: any) => {
+  const getStockStatus = (item: InventoryItem) => {
     if (!item.is_available) return "inactive";
     if (item.quantity <= 0) return "out";
     if (item.quantity <= item.low_stock_threshold) return "low";
     return "ok";
   };
 
-  const filteredItems = inventory.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredItems = inventory.filter((item) => {
+    const matchesSearch =
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.unit_measurement.toLowerCase().includes(searchQuery.toLowerCase());
     const status = getStockStatus(item);
     const matchesStatus = filterStatus === "all" || status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
-  const [formData, setFormData] = useState({
-    name: "",
-    unit_measurement: "pcs",
-    quantity: "",
-    low_stock_threshold: "",
-    is_available: true,
-  });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.info("Inventory is managed through restaurant settings");
-    setShowCreateDialog(false);
-    setFormData({ name: "", unit_measurement: "pcs", quantity: "", low_stock_threshold: "", is_available: true });
+    if (!currentRestaurant) return;
+
+    if (!formData.name.trim()) {
+      toast.error("Item name is required.");
+      return;
+    }
+
+    const quantity = Number(formData.quantity);
+    const threshold = Number(formData.low_stock_threshold);
+
+    if (!Number.isInteger(quantity) || quantity < 0) {
+      toast.error("Quantity must be a whole number of 0 or more.");
+      return;
+    }
+    if (!Number.isInteger(threshold) || threshold < 0) {
+      toast.error("Low stock threshold must be a whole number of 0 or more.");
+      return;
+    }
+
+    const payload = {
+      name: formData.name.trim(),
+      unit_measurement: formData.unit_measurement,
+      quantity,
+      low_stock_threshold: threshold,
+      is_available: formData.is_available,
+    };
+
+    setSubmitting(true);
+    try {
+      if (editingItem) {
+        await updateInventoryItem(editingItem.id, payload);
+        toast.success("Inventory item updated!");
+      } else {
+        await createInventoryItem(currentRestaurant.slug, payload);
+        toast.success("Inventory item added!");
+      }
+      setShowDialog(false);
+      setEditingItem(null);
+      setFormData(EMPTY_FORM);
+      reloadInventory();
+    } catch (err) {
+      toast.error(
+        getErrorMessage(err, editingItem ? "Failed to update item" : "Failed to add item"),
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setFormData(prev => ({ ...prev, [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value }));
+  const handleEdit = (item: InventoryItem) => {
+    setEditingItem(item);
+    setFormData({
+      name: item.name,
+      unit_measurement: item.unit_measurement,
+      quantity: String(item.quantity),
+      low_stock_threshold: String(item.low_stock_threshold),
+      is_available: item.is_available,
+    });
+    setShowDialog(true);
+  };
+
+  const handleDelete = async (item: InventoryItem) => {
+    if (!confirm(`Are you sure you want to delete "${item.name}"?`)) {
+      return;
+    }
+
+    try {
+      await deleteInventoryItem(item.id);
+      toast.success("Inventory item deleted!");
+      reloadInventory();
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to delete item"));
+    }
+  };
+
+  const handleAdjust = async (item: InventoryItem, delta: number) => {
+    setAdjustingId(item.id);
+    try {
+      const updated = await adjustInventoryStock(item.id, delta);
+      setInventory((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to adjust stock"));
+    } finally {
+      setAdjustingId(null);
+    }
   };
 
   if (!currentRestaurant) {
@@ -128,7 +252,16 @@ export default function InventoryPage() {
           <h1 className="page-title">Inventory</h1>
           <p className="page-subtitle">Manage stock levels, units, and low stock alerts</p>
         </div>
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <Dialog
+          open={showDialog}
+          onOpenChange={(open) => {
+            setShowDialog(open);
+            if (!open) {
+              setEditingItem(null);
+              setFormData(EMPTY_FORM);
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -137,7 +270,7 @@ export default function InventoryPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Inventory Item</DialogTitle>
+              <DialogTitle>{editingItem ? "Edit Inventory Item" : "Add Inventory Item"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -151,34 +284,32 @@ export default function InventoryPage() {
                     id="unit_measurement"
                     name="unit_measurement"
                     value={formData.unit_measurement}
-                    onValueChange={(v) => setFormData(prev => ({ ...prev, unit_measurement: v }))}
+                    onValueChange={(v) => setFormData((prev) => ({ ...prev, unit_measurement: v }))}
                     options={UNIT_OPTIONS}
                     placeholder="Select unit"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="quantity">Current Quantity *</Label>
-                  <Input id="quantity" type="number" step="0.01" min="0" name="quantity" value={formData.quantity} onChange={handleChange} placeholder="0" required />
+                  <Input id="quantity" type="number" step="1" min="0" name="quantity" value={formData.quantity} onChange={handleChange} placeholder="0" required />
                 </div>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="low_stock_threshold">Low Stock Threshold *</Label>
-                  <Input id="low_stock_threshold" type="number" step="0.01" min="0" name="low_stock_threshold" value={formData.low_stock_threshold} onChange={handleChange} placeholder="10" required />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="low_stock_threshold">Low Stock Threshold *</Label>
+                <Input id="low_stock_threshold" type="number" step="1" min="0" name="low_stock_threshold" value={formData.low_stock_threshold} onChange={handleChange} placeholder="10" required />
               </div>
               <div className="flex items-center gap-2">
                 <Label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={formData.is_available} onChange={(e) => setFormData(prev => ({ ...prev, is_available: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
+                  <input type="checkbox" checked={formData.is_available} onChange={(e) => setFormData((prev) => ({ ...prev, is_available: e.target.checked }))} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
                   Available
                 </Label>
               </div>
               <DialogFooter>
-                <Button type="button" variant="secondary" onClick={() => { setShowCreateDialog(false); setFormData({ name: "", unit_measurement: "pcs", quantity: "", low_stock_threshold: "", is_available: true }); }}>
+                <Button type="button" variant="secondary" onClick={() => { setShowDialog(false); setEditingItem(null); setFormData(EMPTY_FORM); }}>
                   Cancel
                 </Button>
-                <Button type="submit" loading={inventoryLoading}>
-                  Add Item
+                <Button type="submit" loading={submitting}>
+                  {editingItem ? "Save Changes" : "Add Item"}
                 </Button>
               </DialogFooter>
             </form>
@@ -228,11 +359,13 @@ export default function InventoryPage() {
                     <th className="pb-3 font-medium text-neutral-900">Quantity</th>
                     <th className="pb-3 font-medium text-neutral-900">Threshold</th>
                     <th className="pb-3 font-medium text-neutral-900">Status</th>
+                    <th className="pb-3 font-medium text-neutral-900">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
                   {filteredItems.map((item) => {
                     const status = getStockStatus(item);
+                    const adjusting = adjustingId === item.id;
                     return (
                       <tr key={item.id} className="hover:bg-neutral-50">
                         <td className="py-4">
@@ -255,8 +388,24 @@ export default function InventoryPage() {
                           {status === "ok" && <span className="badge-success">In Stock</span>}
                           {status === "inactive" && <span className="badge-neutral">Inactive</span>}
                         </td>
+                        <td className="py-4">
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="icon-sm" onClick={() => handleAdjust(item, -1)} disabled={adjusting || item.quantity <= 0} aria-label={`Decrease ${item.name} stock`}>
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon-sm" onClick={() => handleAdjust(item, 1)} disabled={adjusting} aria-label={`Increase ${item.name} stock`}>
+                              {adjusting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleEdit(item)} aria-label={`Edit ${item.name}`}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDelete(item)} aria-label={`Delete ${item.name}`}>
+                              <Trash2 className="h-4 w-4 text-primary-600" />
+                            </Button>
+                          </div>
+                        </td>
                       </tr>
-                    )
+                    );
                   })}
                 </tbody>
               </table>

@@ -130,6 +130,14 @@ type RestaurantPayload = Partial<
 
 type RestaurantUpdatePayload = RestaurantPayload | FormData;
 
+type InventoryItemPayload = {
+  name: string;
+  unit_measurement: string;
+  quantity: number;
+  low_stock_threshold: number;
+  is_available: boolean;
+};
+
 interface RestaurantContextValue {
   currentRestaurant: Restaurant | null;
   restaurants: Restaurant[] | null;
@@ -159,7 +167,20 @@ interface RestaurantContextValue {
   createMenuItem: (formData: FormData) => Promise<MenuItem>;
   updateMenuItem: (itemId: number, formData: FormData) => Promise<MenuItem>;
   deleteMenuItem: (itemId: number) => Promise<void>;
-  fetchInventory: (slug: string) => Promise<Inventory[]>;
+  fetchInventory: (slug: string) => Promise<InventoryItem[]>;
+  createInventoryItem: (
+    slug: string,
+    payload: InventoryItemPayload
+  ) => Promise<InventoryItem>;
+  updateInventoryItem: (
+    itemId: number,
+    payload: Partial<InventoryItemPayload>
+  ) => Promise<InventoryItem>;
+  deleteInventoryItem: (itemId: number) => Promise<void>;
+  adjustInventoryStock: (
+    itemId: number,
+    delta: number
+  ) => Promise<InventoryItem>;
   fetchStaff: (slug: string) => Promise<Staff[]>;
   fetchOrders: () => Promise<Order[]>;
   createOrder: (payload: CreateOrderPayload) => Promise<Order>;
@@ -182,28 +203,6 @@ export const RestaurantProvider = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Auto-fetch restaurants on load
-  useEffect(() => {
-    fetchRestaurants();
-  }, []);
-
-  const fetchRestaurants = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await restaurantApi.getRestaurants();
-      setRestaurants(data);
-      // Auto-select first restaurant if none selected
-      if (data.length > 0 && !currentRestaurant) {
-        fetchRestaurant(data[0].slug);
-      }
-    } catch (err) {
-      setError(getErrorMessage(err, "Failed to load restaurants"));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentRestaurant]);
-
   const fetchRestaurant = useCallback(async (slug: string) => {
     setIsLoading(true);
     setError(null);
@@ -218,6 +217,32 @@ export const RestaurantProvider = ({
       setIsLoading(false);
     }
   }, []);
+
+  const fetchRestaurants = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = (await restaurantApi.getRestaurants()) as Restaurant[];
+      setRestaurants(data);
+      // Auto-select the saved restaurant, falling back to the first one
+      if (data.length > 0) {
+        const storedSlug = localStorage.getItem("restaurant_slug");
+        const selected =
+          data.find((restaurant) => restaurant.slug === storedSlug) || data[0];
+        await fetchRestaurant(selected.slug);
+      }
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to load restaurants"));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchRestaurant]);
+
+  // Auto-fetch restaurants on load
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchRestaurants();
+  }, [fetchRestaurants]);
 
   const createRestaurant = useCallback(async (formData: FormData) => {
     setIsLoading(true);
@@ -393,6 +418,70 @@ export const RestaurantProvider = ({
     }
   }, []);
 
+  const createInventoryItem = useCallback(
+    async (slug: string, payload: InventoryItemPayload) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await restaurantApi.createInventoryItem(slug, payload);
+        return data;
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to create inventory item"));
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
+  const updateInventoryItem = useCallback(
+    async (itemId: number, payload: Partial<InventoryItemPayload>) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await restaurantApi.updateInventoryItem(itemId, payload);
+        return data;
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to update inventory item"));
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
+  const deleteInventoryItem = useCallback(async (itemId: number) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await restaurantApi.deleteInventoryItem(itemId);
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to delete inventory item"));
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const adjustInventoryStock = useCallback(
+    async (itemId: number, delta: number) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await restaurantApi.adjustInventoryStock(itemId, delta);
+        return data;
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to adjust stock"));
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
   const fetchStaff = useCallback(async (slug: string) => {
     setIsLoading(true);
     setError(null);
@@ -476,6 +565,10 @@ export const RestaurantProvider = ({
       updateMenuItem,
       deleteMenuItem,
       fetchInventory,
+      createInventoryItem,
+      updateInventoryItem,
+      deleteInventoryItem,
+      adjustInventoryStock,
       fetchStaff,
       fetchOrders,
       createOrder,
@@ -501,6 +594,10 @@ export const RestaurantProvider = ({
       updateMenuItem,
       deleteMenuItem,
       fetchInventory,
+      createInventoryItem,
+      updateInventoryItem,
+      deleteInventoryItem,
+      adjustInventoryStock,
       fetchStaff,
       fetchOrders,
       createOrder,
